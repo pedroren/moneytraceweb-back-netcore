@@ -1,0 +1,5 @@
+- [[Category]] summary 
+- TBD: Pivot for flexible summary by [[Category]], Sub[[Category]] or [[Vendor]]
+- [[Account]] cash flow
+- [[Category]] monthly history
+- [[Budget]] vs Expenses

@@ -1,0 +1,2 @@
+- .[[Net Core Backend]], Angular, PrimeNG
+- NodeJS, React

@@ -1,0 +1,4 @@
+- Title
+- Type (expense, income)
+- Enabled
+- List of [[Sub-category]]

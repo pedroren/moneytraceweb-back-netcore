@@ -1,0 +1,9 @@
+- Multiple [[Account]]s
+- Multiple Expenses/Income [[Category]]
+- [[Sub-category]]
+- Multiple [[Vendor]]
+- [[Template]]s for quick transactions
+- Multi [[Sub-category]] transactions 
+- [[Bill]] tracking
+- [[Budget]] tracking
+- [[Reports]]/Charts

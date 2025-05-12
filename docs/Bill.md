@@ -1,0 +1,6 @@
+- [[Template]]
+- Payment frequency (monthly, weekly, biweekly, yearly)
+- Next due date 
+- Last paid date
+- Last paid amount 
+- [[Pay Bill action]]

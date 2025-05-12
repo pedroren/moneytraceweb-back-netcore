@@ -1,0 +1,6 @@
+- C# .Net Core 9
+- [Minimal Api](https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-9.0&tabs=visual-studio)
+- [Vertical Slice Architecture](https://nadirbad.dev/vertical-slice-architecture-dotnet)
+- Clean Code
+- Mediator
+- .Net Framework InMemory database

@@ -1,0 +1,10 @@
+- Type: simple/transfer
+- Date: defaults to today 
+- Title: option to choose from predefined [[Template]] retrieving included info
+- [[Vendor]]
+- [[Category]] - [[Sub-category]] (only for simple)
+- [[Account]] (source for transfer)
+- Destination [[Account]] (only for transfer )
+- Amount
+- Comments
+- [[CreateTransaction action]]

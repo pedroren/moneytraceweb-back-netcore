@@ -1,0 +1,8 @@
+- [[Dashboard]]
+- New [[Main Input form]] from [[Template]] pick
+- [[Main Input form]]
+- [[Lists]]
+- [[Reports]]
+- [[Bill]] CRUD
+- [[User]] settings
+- [[About]]

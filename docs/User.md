@@ -1,0 +1,6 @@
+- id/email
+- Password
+- Enabled
+- Currency Symbol
+- Date Format
+- Timezone?

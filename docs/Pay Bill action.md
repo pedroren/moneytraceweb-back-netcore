@@ -1,0 +1,4 @@
+- Start [[Main Input form]]
+- Retrieve [[Template]] info
+- Optional modify amount 
+- On submit, update [[Bill]] last paid fields and calculate next due date

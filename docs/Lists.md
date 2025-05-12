@@ -1,0 +1,4 @@
+- [[Account]] CRUD
+- [[Vendor]] CRUD
+- [[Category]] CRUD
+- [[Template]] CRUD
