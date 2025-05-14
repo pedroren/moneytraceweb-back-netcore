@@ -22,11 +22,13 @@ namespace MoneyTrace.RestBackend.Security
 
     public async Task<bool> IsUserAuthenticated()
     {
-      return _httpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
+      return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
     }
     public async Task<bool> IsUserAdmin()
     {
-      return _httpContextAccessor.HttpContext.User.IsInRole("Admin");
+      //return _httpContextAccessor.HttpContext.User.IsInRole("Admin");
+      var userRoleClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type.Contains("/role"))?.Value;
+      return userRoleClaim != null && userRoleClaim.Contains("Administrator");
     }
     public async Task<int> GetUserId()
     {

@@ -104,18 +104,27 @@ namespace MoneyTrace.RestBackend
       return TypedResults.Created($"/api/accounts/{entity.Id}", resultDto);
     }
 
-    private static async Task<Results<Ok<AccountDto>, NotFound, UnauthorizedHttpResult>> GetAccountById(int id, HttpContext context, AppDbContext db)
+    private static async Task<Results<Ok<AccountDto>, NotFound, UnauthorizedHttpResult>> GetAccountById(int id, AppDbContext db, IUserSecurityService userSecService)
     {
-      if (!context.User.Identity.IsAuthenticated)
+      try
+      {
+        var userId = await userSecService.GetUserId();
+        var entity = await db.Accounts.FindAsync(id);
+        if (entity == null)
+        {
+          return TypedResults.NotFound();
+        }
+        if (entity.UserId != userId)
+        {
+          return TypedResults.Unauthorized();
+        }
+        return TypedResults.Ok(AccountDto.FromAccountEntity(entity));
+      }
+      catch (UnauthorizedAccessException)
       {
         return TypedResults.Unauthorized();
       }
-      var entity = await db.Accounts.FindAsync(id);
-      if (entity == null)
-      {
-        return TypedResults.NotFound();
-      }
-      return TypedResults.Ok(AccountDto.FromAccountEntity(entity));
+      
     }
 
     private static async Task<Results<Ok<List<AccountDto>>, UnauthorizedHttpResult>> GetAccounts(AppDbContext db, IUserSecurityService userSecService)

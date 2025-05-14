@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Infraestructure.Persistence;
+using MoneyTrace.RestBackend.Security;
 
 namespace MoneyTrace.RestBackend
 {
@@ -25,6 +26,14 @@ namespace MoneyTrace.RestBackend
                   : TypedResults.NotFound();
       })
       .WithName("GetUserById");
+
+      group.MapGet("/isadmin", async Task<IResult> (IUserSecurityService userSecurityService) =>
+      {
+        return await userSecurityService.IsUserAdmin()
+          is bool isAdmin
+            ? TypedResults.Ok(isAdmin)
+            : TypedResults.Unauthorized();
+      });
     }
   }
 }

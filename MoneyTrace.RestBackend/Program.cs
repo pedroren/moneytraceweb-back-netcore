@@ -1,3 +1,5 @@
+using System.Net;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Infraestructure.Persistence;
 using MoneyTrace.RestBackend;
@@ -49,22 +51,51 @@ if (app.Environment.IsDevelopment())
     //Manually authenticate Admin user for development
 
     // Manually authenticate Admin user for development
-    app.Use(async (context, next) =>
-    {
-        var claims = new List<System.Security.Claims.Claim>
-        {
-            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "Admin"),
-            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, "admin@sample.com"),
-            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Administrator"),
-            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Sid, "1")
-        };
-        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Development");
-        var principal = new System.Security.Claims.ClaimsPrincipal(identity);
-        context.User = principal;
-        await next();
-    });
+    // app.Use(async (context, next) =>
+    // {
+    //     var claims = new List<System.Security.Claims.Claim>
+    //     {
+    //         new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "Admin"),
+    //         new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, "admin@sample.com"),
+    //         new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Administrator"),
+    //         new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Sid, "1")
+    //     };
+    //     var identity = new System.Security.Claims.ClaimsIdentity(claims, "Development");
+    //     var principal = new System.Security.Claims.ClaimsPrincipal(identity);
+    //     context.User = principal;
+    //     await next();
+    // });
 
 }
+
+app.UseExceptionHandler(appError => {
+    appError.Run(async context =>
+    {
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        context.Response.ContentType = "application/json";
+        var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if (contextFeature != null)
+        {
+            if (contextFeature.Error is UnauthorizedAccessException)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                await context.Response.WriteAsJsonAsync(new {
+                    StatusCode = context.Response.StatusCode,
+                    Message = contextFeature.Error.Message
+                });
+            }
+            else
+            {
+                Console.WriteLine(contextFeature.Error);
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsJsonAsync(new {
+                    StatusCode = context.Response.StatusCode,
+                    Message = "Internal Server Error. Please try again later."
+                });
+            }
+        }
+    });
+});
 
 app.MapUserEndpoints();
 app.MapAccountEndpoints();

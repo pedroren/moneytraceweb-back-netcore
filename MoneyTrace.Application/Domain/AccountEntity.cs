@@ -7,6 +7,12 @@ using MoneyTrace.Application.Common;
 
 namespace MoneyTrace.Application.Domain
 {
+  /// <summary>
+  /// Accounts, aka Wallets, are used to track the balance of a user.
+  /// They can be of type Debit or Credit.
+  /// A Debit account is used to track Cash, Savings and Checking accounts.
+  /// A Credit account is used to track Credit cards, Loans and Mortgages.
+  /// </summary>
   public class AccountEntity : AuditableEntity
   {
     public int Id { get; set; }
