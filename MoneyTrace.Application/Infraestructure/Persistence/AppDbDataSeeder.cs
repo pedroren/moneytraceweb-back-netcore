@@ -1,22 +1,32 @@
+using MediatR;
 using MoneyTrace.Application.Domain;
+using MoneyTrace.Application.Features.Users;
 
 namespace MoneyTrace.Application.Infraestructure.Persistence
 {
   public class AppDbDataSeeder
   {
-    private AppDbContext _db;
+    private IMediator _mediator;
 
-    public AppDbDataSeeder(AppDbContext db)
+    public AppDbDataSeeder(IMediator mediator)
     {
-      _db = db;
+      this._mediator = mediator;
     }
+
 
     public void SeedData()
     {
       var users = GetUsersTestData();
-      _db.Users.AddRange(users);
-      _db.Accounts.AddRange(GetAccountsTestData(users[0].Id));
-      _db.SaveChanges();
+      var user = users[0];
+      var createUserCommand = new CreateUserCommand(user.Name, user.Email, user.PasswordHash);
+      var result = _mediator.Send(createUserCommand).Result;
+      if (result.IsError)
+      {
+        throw new Exception("Error creating user " + result.Errors.First().Description);
+      }
+      //_db.Users.AddRange(users);
+      //_db.Accounts.AddRange(GetAccountsTestData(users[0].Id));
+      //_db.SaveChanges();
     }
 
     public List<UserEntity> GetUsersTestData()

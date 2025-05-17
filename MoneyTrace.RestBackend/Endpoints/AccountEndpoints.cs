@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
 using MoneyTrace.RestBackend.Security;
+using MoneyTrace.Application.Features.Accounts;
+using MediatR;
 
 namespace MoneyTrace.RestBackend
 {
@@ -86,22 +88,17 @@ namespace MoneyTrace.RestBackend
       return TypedResults.Ok(resultDto);
     }
 
-    private static async Task<Results<Created<AccountDto>, BadRequest, UnauthorizedHttpResult>>
-      CreateAccount([FromBody] AccountDto accountDto, HttpContext context, AppDbContext db)
+    private static async Task<IResult> CreateAccount([FromBody] CreateAccountCommand accountDto, IMediator mediator, IUserSecurityService userSecService)
     {
-      if (!context.User.Identity.IsAuthenticated)
-      {
-        return TypedResults.Unauthorized();
-      }
+      var userId = await userSecService.GetUserId();
       if (accountDto == null)
       {
         return TypedResults.BadRequest();
       }
-      var entity = accountDto.ToEntity();
-      db.Accounts.Add(entity);
-      await db.SaveChangesAsync();
-      var resultDto = AccountDto.FromAccountEntity(entity);
-      return TypedResults.Created($"/api/accounts/{entity.Id}", resultDto);
+      var result = await mediator.Send(accountDto with { UserId = userId });
+      return result.Match<IResult>(
+        entity => TypedResults.Created($"/api/accounts/{entity.Id}", AccountDto.FromAccountEntity(entity)),
+        errors => TypedResults.BadRequest(errors));
     }
 
     private static async Task<Results<Ok<AccountDto>, NotFound, UnauthorizedHttpResult>> GetAccountById(int id, AppDbContext db, IUserSecurityService userSecService)

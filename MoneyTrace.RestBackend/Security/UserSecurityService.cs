@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
 namespace MoneyTrace.RestBackend.Security
@@ -27,7 +28,7 @@ namespace MoneyTrace.RestBackend.Security
     public async Task<bool> IsUserAdmin()
     {
       //return _httpContextAccessor.HttpContext.User.IsInRole("Admin");
-      var userRoleClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type.Contains("/role"))?.Value;
+      var userRoleClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role);
       return userRoleClaim != null && userRoleClaim.Contains("Administrator");
     }
     public async Task<int> GetUserId()
@@ -36,13 +37,14 @@ namespace MoneyTrace.RestBackend.Security
       {
         throw new UnauthorizedAccessException("User is not authenticated");
       }
-      var userIdClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type.Contains("/sid"))?.Value;
-
+      //var userIdClaim = _httpContextAccessor?.HttpContext?.User.Claims.FirstOrDefault(c => c.Type.Contains("/sid"))?.Value;
+      var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
       if (userIdClaim == null)
       {
         throw new UnauthorizedAccessException("User ID claim not found");
       }
       return int.Parse(userIdClaim);
     }
+
   }
 }

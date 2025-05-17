@@ -2,7 +2,7 @@ using MoneyTrace.Application.Common;
 
 namespace MoneyTrace.Application.Domain
 {
-  public class UserEntity: AuditableEntity
+  public class UserEntity : AuditableEntity, IHasDomainEvent
   {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -12,5 +12,7 @@ namespace MoneyTrace.Application.Domain
     public bool IsEnabled { get; set; } = true;
     public string DateFormat { get; set; } = "yyyy-MM-dd";
     public string TimeZone { get; set; } = "UTC";
+    
+    public List<DomainEvent> DomainEvents { get; } = new List<DomainEvent>();
   }
 }
