@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record GetUserCategoriesQuery(int UserId) : IRequest<List<CategoryEntity>>;
-public class GetUserCategoriesQueryHandler : IRequestHandler<GetUserCategoriesQuery, List<CategoryEntity>>
+public record GetUserCategoriesQuery(int UserId) : IRequest<ErrorOr<List<CategoryEntity>>>;
+public class GetUserCategoriesQueryHandler : IRequestHandler<GetUserCategoriesQuery, ErrorOr<List<CategoryEntity>>>
 {
     private readonly AppDbContext _context;
 
@@ -16,8 +16,12 @@ public class GetUserCategoriesQueryHandler : IRequestHandler<GetUserCategoriesQu
         _context = context;
     }
 
-    public async Task<List<CategoryEntity>> Handle(GetUserCategoriesQuery request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<List<CategoryEntity>>> Handle(GetUserCategoriesQuery request, CancellationToken cancellationToken)
     {
+        if (request.UserId <= 0)
+        {
+            return Error.Unauthorized("User not identified.");
+        }
         return await _context.Categories.AsNoTracking()
           .Include(x => x.SubCategories)
           .Where(x => x.UserId == request.UserId)

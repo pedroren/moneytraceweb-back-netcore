@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using MoneyTrace.Application.Common;
 
 namespace MoneyTrace.Application.Domain
@@ -29,7 +31,10 @@ namespace MoneyTrace.Application.Domain
     public string Name { get; set; }
     public bool IsEnabled { get; set; } = true;
     public int CategoryId { get; set; } //Parent Category
-    public CategoryEntity Category { get; set; } = new();
+
+    [ForeignKey("CategoryId")]
+    [JsonIgnore]
+    public CategoryEntity Category { get; set; } //Parent Category
   }
 
   public enum CategoryType

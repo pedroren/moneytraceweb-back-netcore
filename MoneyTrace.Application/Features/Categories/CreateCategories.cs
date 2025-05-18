@@ -1,14 +1,15 @@
 namespace MoneyTrace.Application.Features.Categories;
 
+using ErrorOr;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record CreateCategoryCommand(int UserId, string Name, CategoryType Type, string[] SubCategories) : IRequest<CategoryEntity>;
+public record CreateCategoryCommand(int UserId, string Name, CategoryType Type, string[] SubCategories) : IRequest<ErrorOr<CategoryEntity>>;
 
-public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CategoryEntity>
+public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, ErrorOr<CategoryEntity>>
 {
     private readonly AppDbContext _context;
 
@@ -17,7 +18,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         _context = context;
     }
 
-    public async Task<CategoryEntity> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<CategoryEntity>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
         var category = new CategoryEntity()
         {
@@ -31,7 +32,8 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
                 IsEnabled = true
             }).ToList()
         };
-        await _context.Categories.AddAsync(category, cancellationToken);
+        _context.Categories.Add(category);
+        await _context.SaveChangesAsync(cancellationToken);
         return category;
     }
 }

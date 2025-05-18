@@ -44,12 +44,11 @@ public static class AccountEndpoints
         var result = await mediator.Send(new DeleteAccountCommand(userId, id));
         return result.Match<IResult>(
           entity => TypedResults.NoContent(),
-          errors => TypedResults.NotFound(errors));
+          errors => errors.ToTypedResultsError());
     }
 
 
-    private static async Task<IResult>
-      UpdateAccount(int id, [FromBody] AccountDto accountDto, IMediator mediator, IUserSecurityService userSecService)
+    private static async Task<IResult> UpdateAccount(int id, [FromBody] AccountDto accountDto, IMediator mediator, IUserSecurityService userSecService)
     {
         var userId = await userSecService.GetUserId();
         if (accountDto == null)
@@ -59,7 +58,7 @@ public static class AccountEndpoints
         var result = await mediator.Send(accountDto.ToUpdateCommand(userId));
         return result.Match<IResult>(
           entity => TypedResults.Ok(entity.ToDto()),
-          errors => TypedResults.BadRequest(errors));
+          errors => errors.ToTypedResultsError());
     }
 
     private static async Task<IResult> CreateAccount([FromBody] CreateAccountCommand accountDto, IMediator mediator, IUserSecurityService userSecService)
@@ -72,7 +71,7 @@ public static class AccountEndpoints
         var result = await mediator.Send(accountDto with { UserId = userId });
         return result.Match<IResult>(
           entity => TypedResults.Created($"/api/accounts/{entity.Id}", entity.ToDto()),
-          errors => TypedResults.BadRequest(errors));
+          errors => errors.ToTypedResultsError());
     }
 
     private static async Task<IResult> GetAccountById(int id, IMediator mediator, IUserSecurityService userSecService)
@@ -81,7 +80,7 @@ public static class AccountEndpoints
         var result = await mediator.Send(new GetAccountByIdQuery(userId, id));
         return result.Match<IResult>(
           entity => TypedResults.Ok(entity.ToDto()),
-          errors => TypedResults.NotFound(errors));
+          errors => errors.ToTypedResultsError());
     }
 
     private static async Task<IResult> GetAccounts(IMediator mediator, IUserSecurityService userSecService)
@@ -91,6 +90,6 @@ public static class AccountEndpoints
         var result = await mediator.Send(query);
         return result.Match<IResult>(
           entities => TypedResults.Ok(entities.Select(x => x.ToDto())),
-          errors => TypedResults.NotFound(errors));
+          errors => errors.ToTypedResultsError());
     }
 }

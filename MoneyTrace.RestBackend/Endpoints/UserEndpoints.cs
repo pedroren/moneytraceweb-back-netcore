@@ -42,8 +42,8 @@ public static class UserEndpoints
         {
             var result = await mediator.Send(userDto);
             return result.Match<IResult>(
-      entity => TypedResults.Created($"/api/accounts/{entity.Id}", entity.ToDto()),
-      errors => TypedResults.BadRequest(errors));
+            entity => TypedResults.Created($"/api/accounts/{entity.Id}", entity.ToDto()),
+            errors => errors.ToTypedResultsError());
         })
         .WithName("CreateUser");
     }

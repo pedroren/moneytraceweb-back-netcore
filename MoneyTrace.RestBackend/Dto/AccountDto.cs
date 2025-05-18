@@ -3,6 +3,9 @@ using MoneyTrace.Application.Features.Accounts;
 
 namespace MoneyTrace.RestBackend.Dto;
 
+/// <summary>
+/// Dto for AccountEntity.
+/// </summary>
 public record AccountDto(int Id, string Name, string Description, decimal Balance, string Type, bool IsEnabled);
 
 public static class AccountDtoExtensions

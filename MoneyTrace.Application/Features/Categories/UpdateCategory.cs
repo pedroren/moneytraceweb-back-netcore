@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record UpdateSubCategoryCommand(int Id, int CategoryId, string Name, bool IsEnabled) : IRequest<ErrorOr<SubCategoryEntity>>;
+public record UpdateSubCategoryCommand(int Id, string Name, bool IsEnabled) : IRequest<ErrorOr<SubCategoryEntity>>;
 public record UpdateCategoryCommand(int UserId, int CategoryId, string Name, CategoryType Type, bool IsEnabled, UpdateSubCategoryCommand[] SubCategories) : IRequest<ErrorOr<CategoryEntity>>;
 public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, ErrorOr<CategoryEntity>>
 {

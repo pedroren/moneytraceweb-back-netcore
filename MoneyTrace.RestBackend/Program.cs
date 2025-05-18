@@ -107,6 +107,7 @@ app.UseExceptionHandler(appError =>
 
 app.MapUserEndpoints();
 app.MapAccountEndpoints();
+app.MapCategoryEndpoints();
 
 // Seed data for InMemory database
 using (var scope = app.Services.CreateScope())

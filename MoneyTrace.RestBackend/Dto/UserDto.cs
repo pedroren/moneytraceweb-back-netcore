@@ -2,14 +2,10 @@ using MoneyTrace.Application.Domain;
 
 namespace MoneyTrace.RestBackend.Dto;
 
-public record UserDto(int Id, string Name, string Email, string DateFormat, string TimeZone)
-{
-    public static UserDto FromUserEntity(UserEntity user)
-    {
-        return new UserDto(user.Id, user.Name, user.Email, user.DateFormat, user.TimeZone);
-    }
-}
-
+/// <summary>
+/// Dto for UserEntity.
+/// </summary>
+public record UserDto(int Id, string Name, string Email, string DateFormat, string TimeZone);
 
 public static class UserEntityDtoExtensions
 {
