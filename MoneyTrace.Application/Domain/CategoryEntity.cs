@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using MoneyTrace.Application.Common;
 
 namespace MoneyTrace.Application.Domain
@@ -8,6 +9,7 @@ namespace MoneyTrace.Application.Domain
   /// </summary>
   public class CategoryEntity : AuditableEntity
   {
+    [Key]
     public int Id { get; set; }
     public string Name { get; set; }
     public CategoryType Type { get; set; } = CategoryType.Expense; // Expense or Income
@@ -22,6 +24,7 @@ namespace MoneyTrace.Application.Domain
   /// </summary>
   public class SubCategoryEntity : AuditableEntity
   {
+    [Key]
     public int Id { get; set; }
     public string Name { get; set; }
     public bool IsEnabled { get; set; } = true;

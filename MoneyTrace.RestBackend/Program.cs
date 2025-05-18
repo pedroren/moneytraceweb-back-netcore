@@ -9,7 +9,7 @@ using MoneyTrace.RestBackend.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<IAppDbContext, AppDbContext>();
+//builder.Services.AddScoped<IAppDbContext, AppDbContext>();
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("MoneyTraceDb"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -69,11 +69,12 @@ if (app.Environment.IsDevelopment())
         var principal = new System.Security.Claims.ClaimsPrincipal(identity);
         context.User = principal;
         await next();
-        });
-    }
-    //
+    });
+}
+//
 
-app.UseExceptionHandler(appError => {
+app.UseExceptionHandler(appError =>
+{
     appError.Run(async context =>
     {
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
@@ -84,7 +85,8 @@ app.UseExceptionHandler(appError => {
             if (contextFeature.Error is UnauthorizedAccessException)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                await context.Response.WriteAsJsonAsync(new {
+                await context.Response.WriteAsJsonAsync(new
+                {
                     StatusCode = context.Response.StatusCode,
                     Message = contextFeature.Error.Message
                 });
@@ -93,7 +95,8 @@ app.UseExceptionHandler(appError => {
             {
                 Console.WriteLine(contextFeature.Error);
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                await context.Response.WriteAsJsonAsync(new {
+                await context.Response.WriteAsJsonAsync(new
+                {
                     StatusCode = context.Response.StatusCode,
                     Message = "Internal Server Error. Please try again later."
                 });
@@ -106,10 +109,11 @@ app.MapUserEndpoints();
 app.MapAccountEndpoints();
 
 // Seed data for InMemory database
-using(var scope = app.Services.CreateScope())
-  {
-      var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-      new AppDbDataSeeder(mediator).SeedData();
-  }
+using (var scope = app.Services.CreateScope())
+{
+    var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+    var seeder = new AppDbDataSeeder(mediator);
+    await seeder.SeedData();
+}
 
 app.Run();

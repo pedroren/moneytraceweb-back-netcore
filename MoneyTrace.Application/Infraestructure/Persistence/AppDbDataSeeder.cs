@@ -4,35 +4,35 @@ using MoneyTrace.Application.Features.Users;
 
 namespace MoneyTrace.Application.Infraestructure.Persistence
 {
-  public class AppDbDataSeeder
-  {
-    private IMediator _mediator;
-
-    public AppDbDataSeeder(IMediator mediator)
+    public class AppDbDataSeeder
     {
-      this._mediator = mediator;
-    }
+        private IMediator _mediator;
+
+        public AppDbDataSeeder(IMediator mediator)
+        {
+            this._mediator = mediator;
+        }
 
 
-    public void SeedData()
-    {
-      var users = GetUsersTestData();
-      var user = users[0];
-      var createUserCommand = new CreateUserCommand(user.Name, user.Email, user.PasswordHash);
-      var result = _mediator.Send(createUserCommand).Result;
-      if (result.IsError)
-      {
-        throw new Exception("Error creating user " + result.Errors.First().Description);
-      }
-      //_db.Users.AddRange(users);
-      //_db.Accounts.AddRange(GetAccountsTestData(users[0].Id));
-      //_db.SaveChanges();
-    }
+        public async Task SeedData()
+        {
+            var users = GetUsersTestData();
+            var user = users[0];
+            var createUserCommand = new CreateUserCommand(user.Name, user.Email, user.PasswordHash);
+            var result = await _mediator.Send(createUserCommand);
+            if (result.IsError)
+            {
+                throw new Exception("Error creating user " + result.Errors.First().Description);
+            }
+            //_db.Users.AddRange(users);
+            //_db.Accounts.AddRange(GetAccountsTestData(users[0].Id));
+            //_db.SaveChanges();
+        }
 
-    public List<UserEntity> GetUsersTestData()
-    {
-      return [
-            new UserEntity{
+        public List<UserEntity> GetUsersTestData()
+        {
+            return [
+                  new UserEntity{
                 Id = 1,
                 Name = "Admin User",
                 Email = "admin@sample.com",
@@ -41,16 +41,16 @@ namespace MoneyTrace.Application.Infraestructure.Persistence
                 UpdatedAt = DateTime.UtcNow,
                 DateFormat = "yyyy-MM-dd",
                 TimeZone = "America/Vancouver",
-                PasswordHash = "admin",
-                PasswordSalt = "admin"
+                PasswordHash = "admin123",
+                PasswordSalt = "admin123"
             }
-         ];
-    }
+               ];
+        }
 
-    public List<AccountEntity> GetAccountsTestData(int userId)
-    {
-      return [
-            new AccountEntity{
+        public List<AccountEntity> GetAccountsTestData(int userId)
+        {
+            return [
+                  new AccountEntity{
                 Name = "CASH",
                 UserId = userId,
                 Type = AccountType.Debit,
@@ -75,6 +75,6 @@ namespace MoneyTrace.Application.Infraestructure.Persistence
                 UpdatedAt = DateTime.UtcNow
             },
          ];
+        }
     }
-  }
 }

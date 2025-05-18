@@ -25,4 +25,5 @@ public class DomainEventService : IDomainEventService
 
 public interface IDomainEventService
 {
+    Task Publish(DomainEvent domainEvent);
 }

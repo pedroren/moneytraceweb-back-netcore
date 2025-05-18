@@ -1,61 +1,69 @@
-namespace MoneyTrace.Application.Common;
+namespace MoneyTrace.Application.Features.Categories;
 
-using MoneyTrace.Application.Domain;
-using MediatR;
-using MoneyTrace.Application.Infraestructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using MoneyTrace.Application.Domain;
+using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record CreateCategoryCommand(int userId, string Name, CategoryType type) : IRequest<CategoryEntity>;
+public record CreateCategoryCommand(int UserId, string Name, CategoryType Type, string[] SubCategories) : IRequest<CategoryEntity>;
 
 public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CategoryEntity>
 {
-  private readonly IAppDbContext _context;
+    private readonly AppDbContext _context;
 
-  public CreateCategoryCommandHandler(IAppDbContext context)
-  {
-    _context = context;
-  }
-
-  public async Task<CategoryEntity> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
-  {
-    var category = new CategoryEntity()
+    public CreateCategoryCommandHandler(AppDbContext context)
     {
-      Name = request.Name,
-      Type = request.type,
-      UserId = request.userId,
-      IsEnabled = true
-    };
-    await _context.Categories.AddAsync(category, cancellationToken);
-    return category;
-  }
+        _context = context;
+    }
 
-
+    public async Task<CategoryEntity> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
+    {
+        var category = new CategoryEntity()
+        {
+            Name = request.Name,
+            Type = request.Type,
+            UserId = request.UserId,
+            IsEnabled = true,
+            SubCategories = request.SubCategories.Select(x => new SubCategoryEntity()
+            {
+                Name = x,
+                IsEnabled = true
+            }).ToList()
+        };
+        await _context.Categories.AddAsync(category, cancellationToken);
+        return category;
+    }
 }
 
-public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
+internal sealed class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
 {
-  private readonly IAppDbContext _context;
+    private readonly AppDbContext _context;
 
-  public CreateCategoryCommandValidator(IAppDbContext context)
-  {
-    _context = context;
+    public CreateCategoryCommandValidator(AppDbContext context)
+    {
+        _context = context;
 
-    RuleFor(x => x.Name)
-        .NotEmpty()
-        .WithMessage("Name is required.")
-        .MaximumLength(100)
-        .WithMessage("Name must not exceed 100 characters.")
-        .MustAsync(BeUniqueName)
-        .WithMessage("An account with the same name already exists.");
-    RuleFor(x => x.userId)
-        .GreaterThan(0)
-        .WithMessage("User not identified.");
-  }
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .WithMessage("Name is required.")
+            .MaximumLength(100)
+            .WithMessage("Name must not exceed 100 characters.")
+            .MustAsync((m, name, canToken) => BeUniqueName(m.UserId, name, CancellationToken.None))
+            .WithMessage("An account with the same name already exists.");
+        RuleFor(x => x.UserId)
+            .GreaterThan(0)
+            .WithMessage("User not identified.");
+        RuleFor(x => x.SubCategories)
+            .NotEmpty()
+            .WithMessage("At least one subcategory is required.")
+            .ForEach(x => x.NotEmpty().WithMessage("Subcategory name is required."));
 
-  private Task<bool> BeUniqueName(string name, CancellationToken cancellationToken)
-  {
-    return _context.Categories
-        .AllAsync(x => x.Name != name, cancellationToken);
-  }
+    }
+
+    private async Task<bool> BeUniqueName(int userId, string name, CancellationToken cancellationToken)
+    {
+        return await _context.Categories
+            .AllAsync(x => x.UserId == userId && x.Name != name, cancellationToken);
+    }
 }

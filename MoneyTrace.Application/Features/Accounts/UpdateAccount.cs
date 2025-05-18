@@ -1,3 +1,5 @@
+namespace MoneyTrace.Application.Features.Accounts;
+
 using ErrorOr;
 using FluentValidation;
 using MediatR;
@@ -5,42 +7,42 @@ using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-namespace MoneyTrace.Application.Features.Accounts;
-
-public record CreateAccountCommand(int UserId, string Name, string Description, decimal Balance, AccountType Type) : IRequest<ErrorOr<AccountEntity>>;
-
-public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand, ErrorOr<AccountEntity>>
+public record UpdateAccountCommand(int UserId, int Id, string Name, string Description, decimal Balance, AccountType Type, bool IsEnabled) : IRequest<ErrorOr<AccountEntity>>;
+public class UpdateAccountCommandHandler : IRequestHandler<UpdateAccountCommand, ErrorOr<AccountEntity>>
 {
     private readonly AppDbContext _context;
 
-    public CreateAccountCommandHandler(AppDbContext context)
+    public UpdateAccountCommandHandler(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<ErrorOr<AccountEntity>> Handle(CreateAccountCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<AccountEntity>> Handle(UpdateAccountCommand request, CancellationToken cancellationToken)
     {
-        var account = new AccountEntity
-        {
-            Name = request.Name,
-            Description = request.Description,
-            UserId = request.UserId,
-            Balance = request.Balance,
-            Type = request.Type,
-            IsEnabled = true
-        };
+        var account = await _context.Accounts
+          .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId, cancellationToken);
 
-        _context.Accounts.Add(account);
+        if (account == null)
+        {
+            return Error.NotFound("Account not found.");
+        }
+
+        account.Name = request.Name;
+        account.Description = request.Description;
+        account.Balance = request.Balance;
+        account.Type = request.Type;
+        account.IsEnabled = request.IsEnabled;
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return account;
     }
 }
-
-internal sealed class CreateAccountCommandValidator : AbstractValidator<CreateAccountCommand>
+internal sealed class UpdateAccountCommandValidator : AbstractValidator<UpdateAccountCommand>
 {
     private readonly AppDbContext _context;
-    public CreateAccountCommandValidator(AppDbContext context)
+
+    public UpdateAccountCommandValidator(AppDbContext context)
     {
         _context = context;
 
@@ -53,8 +55,8 @@ internal sealed class CreateAccountCommandValidator : AbstractValidator<CreateAc
           .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
         RuleFor(x => x.UserId)
           .GreaterThan(0).WithMessage("User not identified.");
-
     }
+
     /// <summary>
     /// Must be unique name for the user
     /// </summary>

@@ -1,5 +1,6 @@
 namespace MoneyTrace.Application.Common;
 
+
 public abstract class DomainEvent
 {
     protected DomainEvent()

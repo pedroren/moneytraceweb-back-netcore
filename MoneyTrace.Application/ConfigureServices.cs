@@ -21,7 +21,7 @@ public static class ConfigureServices
 
     public static IServiceCollection AddAppInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IDomainEventService, DomainEventService>();
+        services.AddScoped<IDomainEventService, DomainEventService>();
         return services;
     }
 }
