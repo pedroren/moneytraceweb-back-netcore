@@ -41,7 +41,7 @@ public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery,
 
     public async Task<ErrorOr<CategoryEntity>> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
     {
-        var category = await _context.Categories
+        var category = await _context.Categories.AsNoTracking()
           .Include(x => x.SubCategories)
           .FirstOrDefaultAsync(x => x.Id == request.CategoryId && x.UserId == request.UserId, cancellationToken);
 

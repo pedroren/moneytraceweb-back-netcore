@@ -37,38 +37,25 @@ public static class AccountEndpoints
     private static async Task<IResult> DeleteAccount(int id, IMediator mediator, IUserSecurityService userSecService)
     {
         var userId = await userSecService.GetUserId();
-        if (id <= 0)
-        {
-            return TypedResults.BadRequest();
-        }
         var result = await mediator.Send(new DeleteAccountCommand(userId, id));
         return result.Match<IResult>(
           entity => TypedResults.NoContent(),
           errors => errors.ToTypedResultsError());
     }
 
-
     private static async Task<IResult> UpdateAccount(int id, [FromBody] AccountDto accountDto, IMediator mediator, IUserSecurityService userSecService)
     {
         var userId = await userSecService.GetUserId();
-        if (accountDto == null)
-        {
-            return TypedResults.BadRequest();
-        }
         var result = await mediator.Send(accountDto.ToUpdateCommand(userId));
         return result.Match<IResult>(
           entity => TypedResults.Ok(entity.ToDto()),
           errors => errors.ToTypedResultsError());
     }
 
-    private static async Task<IResult> CreateAccount([FromBody] CreateAccountCommand accountDto, IMediator mediator, IUserSecurityService userSecService)
+    private static async Task<IResult> CreateAccount([FromBody] AccountDto accountDto, IMediator mediator, IUserSecurityService userSecService)
     {
         var userId = await userSecService.GetUserId();
-        if (accountDto == null)
-        {
-            return TypedResults.BadRequest();
-        }
-        var result = await mediator.Send(accountDto with { UserId = userId });
+        var result = await mediator.Send(accountDto.ToCreateCommand(userId));
         return result.Match<IResult>(
           entity => TypedResults.Created($"/api/accounts/{entity.Id}", entity.ToDto()),
           errors => errors.ToTypedResultsError());

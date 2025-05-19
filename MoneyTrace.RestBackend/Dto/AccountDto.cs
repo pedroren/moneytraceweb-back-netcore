@@ -1,3 +1,4 @@
+using FluentValidation;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Features.Accounts;
 
@@ -8,11 +9,30 @@ namespace MoneyTrace.RestBackend.Dto;
 /// </summary>
 public record AccountDto(int Id, string Name, string Description, decimal Balance, string Type, bool IsEnabled);
 
+public sealed class AccountDtoValidator : AbstractValidator<AccountDto>
+{
+    public AccountDtoValidator()
+    {        
+        RuleFor(x => x.Type)
+            .NotEmpty()
+            .WithMessage("Type is required.")
+            .Must(type => Enum.IsDefined(typeof(AccountType), type))
+            .WithMessage("Type is not valid.");
+    }
+}
+
 public static class AccountDtoExtensions
 {
-    public static UpdateAccountCommand ToUpdateCommand(this AccountDto account, int userId)
+    public static UpdateAccountCommand ToUpdateCommand(this AccountDto dto, int userId)
     {
-        return new UpdateAccountCommand(userId, account.Id, account.Name, account.Description, account.Balance, Enum.Parse<AccountType>(account.Type), account.IsEnabled);
+        new AccountDtoValidator().ValidateAndThrow(dto);
+        return new UpdateAccountCommand(userId, dto.Id, dto.Name, dto.Description, dto.Balance, Enum.Parse<AccountType>(dto.Type), dto.IsEnabled);
+    }
+
+    public static CreateAccountCommand ToCreateCommand(this AccountDto dto, int userId)
+    {
+        new AccountDtoValidator().ValidateAndThrow(dto);
+        return new CreateAccountCommand(userId, dto.Name, dto.Description, dto.Balance, Enum.Parse<AccountType>(dto.Type));
     }
 
     public static AccountDto ToDto(this AccountEntity account)

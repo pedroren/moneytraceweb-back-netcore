@@ -22,7 +22,7 @@ public class GetUserAccountsQueryHandler : IRequestHandler<GetUserAccountsQuery,
         {
             return Error.Validation("User not identified.");
         }
-        return await _context.Accounts
+        return await _context.Accounts.AsNoTracking()
           .Where(x => x.UserId == request.UserId)
           .ToListAsync(cancellationToken);
     }

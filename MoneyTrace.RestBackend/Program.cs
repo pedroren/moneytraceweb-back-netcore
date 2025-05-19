@@ -93,15 +93,27 @@ app.UseExceptionHandler(appError =>
             }
             else
             {
+                //Propertly convert exceptions to HttpStatusCode
                 Console.WriteLine(contextFeature.Error);
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                if (contextFeature.Error is BadHttpRequestException badRequest)                
+                    context.Response.StatusCode = badRequest.StatusCode;
+                if (contextFeature.Error is ArgumentException || contextFeature.Error is ArgumentNullException || contextFeature.Error is ArgumentOutOfRangeException)
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;                 
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    StatusCode = context.Response.StatusCode,
+                    Message = contextFeature.Error.Message
+                });
+            }
+        }
+        else
+            {                                
                 await context.Response.WriteAsJsonAsync(new
                 {
                     StatusCode = context.Response.StatusCode,
                     Message = "Internal Server Error. Please try again later."
                 });
             }
-        }
     });
 });
 

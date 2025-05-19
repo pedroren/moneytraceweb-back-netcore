@@ -43,6 +43,8 @@ internal sealed class DeleteAccountCommandValidator : AbstractValidator<DeleteAc
         _context = context;
         RuleFor(x => x.UserId)
           .GreaterThan(0).WithMessage("User not identified.");
+          RuleFor(x => x.Id)
+          .GreaterThan(0).WithMessage("Account not identified.");
         //TODO: Validate if the account is not used in any transaction
     }
 }

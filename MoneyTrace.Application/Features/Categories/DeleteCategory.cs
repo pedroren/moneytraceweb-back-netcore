@@ -44,7 +44,10 @@ internal sealed class DeleteCategoryCommandValidator : AbstractValidator<DeleteC
         _context = context;
         RuleFor(x => x.UserId)
           .GreaterThan(0).WithMessage("User not identified.");
+        RuleFor(x => x.CategoryId)
+          .GreaterThan(0).WithMessage("Category not identified.");
         //TODO: Validate if the category is not used in any transaction
+                  
     }
 }
 
