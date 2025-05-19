@@ -78,10 +78,10 @@ public static class CategoryEndpoints
     }
 
 
-    private static async Task<IResult> GetCategoryById(IMediator mediator, IUserSecurityService userSecService)
+    private static async Task<IResult> GetCategoryById(int id, IMediator mediator, IUserSecurityService userSecService)
     {
         var userId = await userSecService.GetUserId();
-        var result = await mediator.Send(new GetCategoryByIdQuery(userId, 0));
+        var result = await mediator.Send(new GetCategoryByIdQuery(userId, id));
         return result.Match<IResult>(
           entity => TypedResults.Ok(entity.ToDto()),
           errors => errors.ToTypedResultsError());

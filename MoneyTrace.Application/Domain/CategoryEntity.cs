@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Common;
 
 namespace MoneyTrace.Application.Domain
@@ -9,6 +10,7 @@ namespace MoneyTrace.Application.Domain
   /// Category represents the main group of category or concept for transactions.
   /// Contains multiple subcategories.
   /// </summary>
+  /// <remarks>Aggregate root for Category-SubCategory</remarks>
   public class CategoryEntity : AuditableEntity
   {
     [Key]
@@ -24,17 +26,13 @@ namespace MoneyTrace.Application.Domain
   /// SubCategory represents a subdivions of a category.
   /// It's Type and User is the same as the parent.
   /// </summary>
+  [Owned]
   public class SubCategoryEntity : AuditableEntity
   {
     [Key]
     public int Id { get; set; }
     public string Name { get; set; }
     public bool IsEnabled { get; set; } = true;
-    public int CategoryId { get; set; } //Parent Category
-
-    [ForeignKey("CategoryId")]
-    [JsonIgnore]
-    public CategoryEntity Category { get; set; } //Parent Category
   }
 
   public enum CategoryType
