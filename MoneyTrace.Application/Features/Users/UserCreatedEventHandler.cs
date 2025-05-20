@@ -5,6 +5,7 @@ using MediatR;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Features.Accounts;
 using MoneyTrace.Application.Features.Categories;
+using MoneyTrace.Application.Features.Vendors;
 
 internal sealed class UserCreatedEventHandler(IMediator mediator) : INotificationHandler<DomainEventNotification<UserCreatedEvent>>
 {
@@ -15,10 +16,9 @@ internal sealed class UserCreatedEventHandler(IMediator mediator) : INotificatio
         Console.WriteLine($"User created: {domainEvent.Item.Name}");
 
         // Create default accounts and categories for new user
-
-        //New accounts
         await CreateUserDefAccounts(domainEvent, cancellationToken);
         await CreateUserDefCategories(domainEvent, cancellationToken);
+        await CreateUserDefVendors(domainEvent, cancellationToken);
 
         return;
     }
@@ -57,6 +57,23 @@ internal sealed class UserCreatedEventHandler(IMediator mediator) : INotificatio
         taskList.Add(mediator.Send(account3, cancellationToken));
         var account4 = new CreateAccountCommand(domainEvent.Item.Id, "Savings", "Savings account", 0, AccountType.Debit);
         taskList.Add(mediator.Send(account4, cancellationToken));
+
+        await Task.WhenAll(taskList);
+    }
+
+    private async Task CreateUserDefVendors(UserCreatedEvent domainEvent, CancellationToken cancellationToken)
+    {
+        var taskList = new List<Task>();
+
+        var vendor0 = new CreateVendorCommand(domainEvent.Item.Id, "Other");
+        taskList.Add(mediator.Send(vendor0, cancellationToken));
+        var vendor1 = new CreateVendorCommand(domainEvent.Item.Id, "Amazon");
+        taskList.Add(mediator.Send(vendor1, cancellationToken));
+        var vendor2 = new CreateVendorCommand(domainEvent.Item.Id, "Walmart");
+        taskList.Add(mediator.Send(vendor2, cancellationToken));
+        var vendor3 = new CreateVendorCommand(domainEvent.Item.Id, "Costco");
+        taskList.Add(mediator.Send(vendor3, cancellationToken));
+
 
         await Task.WhenAll(taskList);
     }

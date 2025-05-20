@@ -27,6 +27,7 @@ public class AppDbContext : DbContext//, IAppDbContext
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<AccountEntity> Accounts { get; set; }
     public DbSet<CategoryEntity> Categories { get; set; }
+    public DbSet<VendorEntity> Vendors { get; set; }
 
     //Insert sample data when creating the database
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -41,7 +42,7 @@ public class AppDbContext : DbContext//, IAppDbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
         foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
         {

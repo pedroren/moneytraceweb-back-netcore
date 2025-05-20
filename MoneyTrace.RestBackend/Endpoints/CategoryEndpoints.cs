@@ -16,6 +16,8 @@ public static class CategoryEndpoints
 
         group.MapGet("/", GetCategories)
             .WithName("GetCategories");
+        group.MapGet("/active", GetCategoriesActive)
+            .WithName("GetCategoriesActive");
 
         group.MapGet("/{id}", GetCategoryById)
             .WithName("GetCategoryById");
@@ -81,5 +83,12 @@ public static class CategoryEndpoints
           entities => TypedResults.Ok(entities.Select(e => e.ToDto())),
           errors => errors.ToTypedResultsError());
     }
-
+    private static async Task<IResult> GetCategoriesActive(IMediator mediator, IUserSecurityService userSecService)
+    {
+        var userId = await userSecService.GetUserId();
+        var result = await mediator.Send(new GetUserCategoriesQuery(userId));
+        return result.Match<IResult>(
+          entities => TypedResults.Ok(entities.Where(x => x.IsEnabled).Select(e => e.ToDto())),
+          errors => errors.ToTypedResultsError());
+    }
 }

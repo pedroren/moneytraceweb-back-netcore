@@ -16,6 +16,8 @@ public static class AccountEndpoints
 
         group.MapGet("/", GetAccounts)
             .WithName("GetAccounts");
+        group.MapGet("/active", GetAccountsActive)
+            .WithName("GetAccountsActive");
 
         group.MapGet("/{id}", GetAccountById)
             .WithName("GetAccountById");
@@ -77,6 +79,16 @@ public static class AccountEndpoints
         var result = await mediator.Send(query);
         return result.Match<IResult>(
           entities => TypedResults.Ok(entities.Select(x => x.ToDto())),
+          errors => errors.ToTypedResultsError());
+    }
+
+    private static async Task<IResult> GetAccountsActive(IMediator mediator, IUserSecurityService userSecService)
+    {
+        var userId = await userSecService.GetUserId();
+        var query = new GetUserAccountsQuery(userId);
+        var result = await mediator.Send(query);
+        return result.Match<IResult>(
+          entities => TypedResults.Ok(entities.Where(x => x.IsEnabled).Select(x => x.ToDto())),
           errors => errors.ToTypedResultsError());
     }
 }

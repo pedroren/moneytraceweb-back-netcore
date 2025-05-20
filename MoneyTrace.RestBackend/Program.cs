@@ -36,6 +36,8 @@ builder.Services.AddAppInfrastructure(builder.Configuration); // From the applic
 
 builder.Services.AddTransient<IUserSecurityService, UserSecurityService>(); //Web authentication helper
 
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 app.UseAuthentication();
@@ -74,6 +76,7 @@ app.ConfigureExceptionHandler();
 app.MapUserEndpoints();
 app.MapAccountEndpoints();
 app.MapCategoryEndpoints();
+app.MapVendorEndpoints();
 
 // Seed initial data for InMemory database
 using (var scope = app.Services.CreateScope())
