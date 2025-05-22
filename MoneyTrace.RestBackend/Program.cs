@@ -77,6 +77,7 @@ app.MapUserEndpoints();
 app.MapAccountEndpoints();
 app.MapCategoryEndpoints();
 app.MapVendorEndpoints();
+app.MapOperationEndpoints();
 
 // Seed initial data for InMemory database
 using (var scope = app.Services.CreateScope())

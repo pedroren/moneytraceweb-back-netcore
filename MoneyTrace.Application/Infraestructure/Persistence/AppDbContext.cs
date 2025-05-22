@@ -27,7 +27,10 @@ public class AppDbContext : DbContext//, IAppDbContext
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<AccountEntity> Accounts { get; set; }
     public DbSet<CategoryEntity> Categories { get; set; }
+    public DbSet<SubCategoryEntity> SubCategories { get; set; }
     public DbSet<VendorEntity> Vendors { get; set; }
+
+    public DbSet<OperationEntity> Operations { get; set; }
 
     //Insert sample data when creating the database
     protected override void OnModelCreating(ModelBuilder modelBuilder)
