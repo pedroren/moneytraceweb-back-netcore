@@ -40,29 +40,60 @@ public class UpdateAccountCommandHandler : IRequestHandler<UpdateAccountCommand,
 }
 internal sealed class UpdateAccountCommandValidator : AbstractValidator<UpdateAccountCommand>
 {
+  private readonly AppDbContext _context;
+
+  public UpdateAccountCommandValidator(AppDbContext context)
+  {
+    _context = context;
+
+    RuleFor(x => x.Name)
+      .NotEmpty().WithMessage("Name is required.")
+      .MaximumLength(100).WithMessage("Name must not exceed 100 characters.")
+      .MustAsync((m, name, canToken) => BeUniqueName(m.UserId, name, CancellationToken.None))
+      .WithMessage("An account with the same name already exists."); ;
+    RuleFor(x => x.Description)
+      .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
+    RuleFor(x => x.UserId)
+      .GreaterThan(0).WithMessage("User not identified.");
+  }
+
+  /// <summary>
+  /// Must be unique name for the user
+  /// </summary>
+  private Task<bool> BeUniqueName(int userId, string name, CancellationToken cancellationToken)
+  {
+    return _context.Accounts
+        .AllAsync(l => l.UserId == userId && l.Name != name, cancellationToken);
+  }
+}
+
+public record UpdateAccountBalanceCommand(int UserId, int Id, decimal Balance) : IRequest<ErrorOr<AccountEntity>>;
+public class UpdateAccountBalanceCommandHandler : IRequestHandler<UpdateAccountBalanceCommand, ErrorOr<AccountEntity>>
+{
     private readonly AppDbContext _context;
 
-    public UpdateAccountCommandValidator(AppDbContext context)
+    public UpdateAccountBalanceCommandHandler(AppDbContext context)
     {
         _context = context;
-
-        RuleFor(x => x.Name)
-          .NotEmpty().WithMessage("Name is required.")
-          .MaximumLength(100).WithMessage("Name must not exceed 100 characters.")
-          .MustAsync((m, name, canToken) => BeUniqueName(m.UserId, name, CancellationToken.None))
-          .WithMessage("An account with the same name already exists."); ;
-        RuleFor(x => x.Description)
-          .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
-        RuleFor(x => x.UserId)
-          .GreaterThan(0).WithMessage("User not identified.");
     }
 
-    /// <summary>
-    /// Must be unique name for the user
-    /// </summary>
-    private Task<bool> BeUniqueName(int userId, string name, CancellationToken cancellationToken)
+    public async Task<ErrorOr<AccountEntity>> Handle(UpdateAccountBalanceCommand request, CancellationToken cancellationToken)
     {
-        return _context.Accounts
-            .AllAsync(l => l.UserId == userId && l.Name != name, cancellationToken);
+        var account = await _context.Accounts
+          .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId, cancellationToken);
+
+        if (account == null)
+        {
+            return Error.NotFound("Account not found.");
+        }
+
+        if (account.Balance != request.Balance)
+        {
+            account.Balance = request.Balance;
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        return account;
     }
 }

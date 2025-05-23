@@ -8,7 +8,7 @@ namespace MoneyTrace.RestBackend.Dto;
 /// <summary>
 /// Dto for CategoryEntity.
 /// </summary>
-public record CategoryDto(int Id, string Name, string Type, bool IsEnabled, List<SubCategoryDto> SubCategories, int UserId);
+public record CategoryDto(int Id, string Name, CategoryType Type, bool IsEnabled, List<SubCategoryDto> SubCategories, int UserId);
 
 /// <summary>
 /// Dto for SubCategoryEntity.
@@ -16,23 +16,11 @@ public record CategoryDto(int Id, string Name, string Type, bool IsEnabled, List
 public record SubCategoryDto(int Id, string Name, bool IsEnabled);
 
 
-public sealed class CategoryDtoValidator : AbstractValidator<CategoryDto>
-{
-    public CategoryDtoValidator()
-    {
-        RuleFor(x => x.Type)
-            .NotEmpty()
-            .WithMessage("Type is required.")
-            .Must(type => Enum.IsDefined(typeof(CategoryType), type))
-            .WithMessage("Type is not valid.");
-    }
-}
-
 public static class CategoryDtoExtensions
 {
     public static CategoryDto ToDto(this CategoryEntity entity)
     {
-        return new CategoryDto(entity.Id, entity.Name, entity.Type.ToString(), entity.IsEnabled, entity.SubCategories.Select(x => x.ToDto()).ToList(), entity.UserId);
+        return new CategoryDto(entity.Id, entity.Name, entity.Type, entity.IsEnabled, entity.SubCategories.Select(x => x.ToDto()).ToList(), entity.UserId);
     }
 
     public static SubCategoryDto ToDto(this SubCategoryEntity entity)
@@ -42,8 +30,7 @@ public static class CategoryDtoExtensions
 
     public static CreateCategoryCommand ToCreateCommand(this CategoryDto dto, int userId)
     {
-        new CategoryDtoValidator().ValidateAndThrow(dto);
-        return new CreateCategoryCommand(userId, dto.Name, Enum.Parse<CategoryType>(dto.Type), dto.SubCategories.Select(x => x.Name).ToArray());
+        return new CreateCategoryCommand(userId, dto.Name, dto.Type, dto.SubCategories.Select(x => x.Name).ToArray());
     }
 
     public static UpdateSubCategoryCommand ToUpdateSubCommand(this SubCategoryDto dto)
@@ -52,8 +39,7 @@ public static class CategoryDtoExtensions
     }
     public static UpdateCategoryCommand ToUpdateCommand(this CategoryDto dto, int userId)
     {
-        new CategoryDtoValidator().ValidateAndThrow(dto);
-        return new UpdateCategoryCommand(userId, dto.Id, dto.Name, Enum.Parse<CategoryType>(dto.Type), dto.IsEnabled,
+        return new UpdateCategoryCommand(userId, dto.Id, dto.Name, dto.Type, dto.IsEnabled,
             dto.SubCategories.Select(x => x.ToUpdateSubCommand()).ToArray());
     }
 }

@@ -9,7 +9,7 @@ namespace MoneyTrace.Application.Features.Operations;
 
 public record UpdateOperationCommand(int UserId, int OperationId, DateTime Date, string Title, OperationType Type,
     int? VendorId, int AccountId, int? DestinationAccountId, decimal TotalAmount, string Comments,
-    (int CategoryId, int SubCategoryId, decimal Ammount)[] Categories) : IRequest<ErrorOr<OperationEntity>>;
+    OperationCategoryModel[] Categories) : IRequest<ErrorOr<OperationEntity>>;
 public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationCommand, ErrorOr<OperationEntity>>
 {
     private readonly AppDbContext _context;
@@ -22,10 +22,10 @@ public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationComm
     public async Task<ErrorOr<OperationEntity>> Handle(UpdateOperationCommand request, CancellationToken cancellationToken)
     {
         var operation = await _context.Operations
-            .Include(o => o.Categories)
+            .Include(o => o.Allocation)
             .ThenInclude(c => c.Category)
             .ThenInclude(c => c.SubCategories)
-            .Include(o => o.Categories)
+            .Include(o => o.Allocation)
             .ThenInclude(c => c.SubCategory)
             .FirstOrDefaultAsync(o => o.Id == request.OperationId && o.UserId == request.UserId, cancellationToken);
 
@@ -44,7 +44,7 @@ public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationComm
         operation.Comments = request.Comments;
 
         // Clear existing categories
-        operation.Categories.Clear();
+        operation.Allocation.Clear();
 
         // Add new categories
         foreach (var category in request.Categories)
@@ -53,9 +53,9 @@ public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationComm
             {
                 Category = await _context.Categories.FindAsync(category.CategoryId),
                 SubCategory = await _context.SubCategories.FindAsync(category.SubCategoryId),
-                Amount = category.Ammount
+                Amount = category.Amount
             };
-            operation.Categories.Add(opCategory);
+            operation.Allocation.Add(opCategory);
         }
 
         await _context.SaveChangesAsync(cancellationToken);

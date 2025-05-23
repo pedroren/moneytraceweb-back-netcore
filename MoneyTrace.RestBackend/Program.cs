@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application;
@@ -37,6 +38,16 @@ builder.Services.AddAppInfrastructure(builder.Configuration); // From the applic
 builder.Services.AddTransient<IUserSecurityService, UserSecurityService>(); //Web authentication helper
 
 builder.Services.AddProblemDetails();
+
+//Enum serialization
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 var app = builder.Build();
 

@@ -20,9 +20,9 @@ public class DeleteOperationCommandHandler : IRequestHandler<DeleteOperationComm
     public async Task<ErrorOr<OperationEntity>> Handle(DeleteOperationCommand request, CancellationToken cancellationToken)
     {
         var operation = await _context.Operations
-            .Include(o => o.Categories)
+            .Include(o => o.Allocation)
             .ThenInclude(c => c.Category)
-            .Include(o => o.Categories)
+            .Include(o => o.Allocation)
             .ThenInclude(c => c.SubCategory)
             .FirstOrDefaultAsync(o => o.Id == request.OperationId && o.UserId == request.UserId, cancellationToken);
 

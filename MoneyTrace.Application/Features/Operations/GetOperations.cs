@@ -24,10 +24,10 @@ public class GetOperationsQueryHandler : IRequestHandler<GetOperationsQuery, Err
             return Error.Unauthorized("User not identified.");
         }
         return await _context.Operations.AsNoTracking()
-          .Include(x => x.Categories)
+          .Include(x => x.Allocation)
           .ThenInclude(x => x.Category)
           .ThenInclude(x => x.SubCategories)
-          .Include(x => x.Categories)
+          .Include(x => x.Allocation)
           .ThenInclude(x => x.SubCategory)
           .Where(x => x.UserId == request.UserId)
           .ToListAsync(cancellationToken);
@@ -46,10 +46,10 @@ public class GetOperationByIdQueryHandler : IRequestHandler<GetOperationByIdQuer
     public async Task<ErrorOr<OperationEntity>> Handle(GetOperationByIdQuery request, CancellationToken cancellationToken)
     {
         var operation = await _context.Operations.AsNoTracking()
-          .Include(x => x.Categories)
+          .Include(x => x.Allocation)
           .ThenInclude(x => x.Category)
           .ThenInclude(x => x.SubCategories)
-          .Include(x => x.Categories)
+          .Include(x => x.Allocation)
           .ThenInclude(x => x.SubCategory)
           .FirstOrDefaultAsync(x => x.Id == request.OperationId && x.UserId == request.UserId, cancellationToken);
 
@@ -79,7 +79,7 @@ public class GetOperationByCriteriaQueryHandler : IRequestHandler<GetOperationBy
         }
 
         var query = _context.Operations.AsNoTracking()
-            .Include(x => x.Categories)
+            .Include(x => x.Allocation)
             .ThenInclude(x => x.Category)
             .ThenInclude(x => x.SubCategories)
             .Where(x => x.UserId == request.UserId);
@@ -96,7 +96,7 @@ public class GetOperationByCriteriaQueryHandler : IRequestHandler<GetOperationBy
 
         if (request.CategoryId.HasValue)
         {
-            query = query.Where(x => x.Categories.Any(c => c.Category.Id == request.CategoryId.Value));
+            query = query.Where(x => x.Allocation.Any(c => c.Category.Id == request.CategoryId.Value));
         }
 
         if (request.VendorId.HasValue)
