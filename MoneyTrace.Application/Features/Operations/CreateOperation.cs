@@ -4,9 +4,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Common;
 using MoneyTrace.Application.Domain;
-using MoneyTrace.Application.Features.Accounts;
-using MoneyTrace.Application.Features.Categories;
-using MoneyTrace.Application.Features.Vendors;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
 namespace MoneyTrace.Application.Features.Operations;
@@ -36,13 +33,13 @@ public class CreateOperationCommandHandler : IRequestHandler<CreateOperationComm
             : null;
         if (request.DestinationAccountId.HasValue && destinationAccount == null)
             return Error.NotFound("Invalid destination account.");
-        
+
         VendorEntity? vendor = request.VendorId.HasValue
             ? await _context.Vendors.FirstOrDefaultAsync(x => x.UserId == request.UserId && x.Id == request.VendorId.Value, cancellationToken)
             : null;
         if (request.VendorId.HasValue && vendor == null)
             return Error.NotFound("Invalid vendor.");
-        
+
         List<CategoryEntity> categories = new();
         List<SubCategoryEntity> subCategories = new();
         if (request.Allocation != null && request.Allocation.Length > 0)
@@ -120,7 +117,16 @@ public sealed class CreateOperationCommandValidator : AbstractValidator<CreateOp
             RuleFor(x => x.Allocation)
             .NotEmpty().WithMessage("At least one category is required.")
             .Must(categories => categories.GroupBy(c => new { c.CategoryId, c.SubCategoryId }).Where(g => g.Count() > 1).Count() == 0)
-            .WithMessage("Categories must be unique.");
+            .WithMessage("Categories must be unique.")
+            .Must((x, categories) => categories.Sum(c => c.Amount) == x.TotalAmount)
+            .WithMessage("The sum of the allocations must be equal to the total amount.")
+            //CategoryType must be the same for all categories
+            .Must((x, categories) =>
+            {
+                var categoryTypes = categories.Select(c => _context.Categories.Find(c.CategoryId).Type).Distinct();
+                return categoryTypes.Count() == 1;
+            })
+            .WithMessage("All categories must be of the same type.");            
         });
 
     }
