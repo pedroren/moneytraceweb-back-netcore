@@ -63,5 +63,3 @@ public class OperationCategoryEntity
     public decimal Amount { get; set; } = 0;
     public int Order { get; set; }
 }
-
-public record OperationCategoryModel(int CategoryId, int SubCategoryId, decimal Amount);

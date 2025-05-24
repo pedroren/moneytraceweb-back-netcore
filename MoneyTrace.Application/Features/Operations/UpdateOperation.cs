@@ -9,7 +9,9 @@ namespace MoneyTrace.Application.Features.Operations;
 
 public record UpdateOperationCommand(int UserId, int OperationId, DateTime Date, string Title, OperationType Type,
     int? VendorId, int AccountId, int? DestinationAccountId, decimal TotalAmount, string Comments,
-    OperationCategoryModel[] Categories) : IRequest<ErrorOr<OperationEntity>>;
+    OperationCategoryModel[] Allocation) : OperationEntityCommand(UserId, Date, Title, Type, VendorId,
+    AccountId, DestinationAccountId, TotalAmount, Comments,
+    Allocation), IRequest<ErrorOr<OperationEntity>>;
 public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationCommand, ErrorOr<OperationEntity>>
 {
     private readonly AppDbContext _context;
@@ -47,7 +49,7 @@ public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationComm
         operation.Allocation.Clear();
 
         // Add new categories
-        foreach (var category in request.Categories)
+        foreach (var category in request.Allocation)
         {
             var opCategory = new OperationCategoryEntity
             {
@@ -63,23 +65,10 @@ public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationComm
         return operation;
     }
 }
-public sealed class UpdateOperationCommandValidator : AbstractValidator<UpdateOperationCommand>
-{
-    private readonly AppDbContext _context;
-    public UpdateOperationCommandValidator(AppDbContext context)
-    {
-        _context = context;
 
-        RuleFor(x => x.Title)
-            .NotEmpty().WithMessage("Title is required.")
-            .MaximumLength(100).WithMessage("Title must not exceed 100 characters.");
-        RuleFor(x => x.UserId)
-            .GreaterThan(0).WithMessage("User not identified.");
-        RuleFor(x => x.OperationId)
-            .GreaterThan(0).WithMessage("Operation not identified.");
-        RuleFor(x => x.AccountId)
-            .GreaterThan(0).WithMessage("Account not identified.");
-        RuleFor(x => x.DestinationAccountId)
-            .GreaterThan(0).WithMessage("Destination account not identified.");
+internal sealed class UpdateOperationCommandValidator : OperationEntityValidator<UpdateOperationCommand>
+{
+    public UpdateOperationCommandValidator(AppDbContext context) : base(context)
+    {
     }
 }

@@ -20,16 +20,16 @@ internal sealed class OperationCreatedEventHandler(IMediator mediator) : INotifi
         var operation = domainEvent.Item;
 
         Console.WriteLine($"Operation created: {operation.Title}");
-        var categoryType = operation.Allocation.FirstOrDefault().Category.Type;
-        int increaseDecrease = -1;        
+        int increaseDecrease = -1;
 
         // Update account(s) balance
         if (operation.Type == OperationType.Simple)
         {
-          switch (categoryType)
+            var categoryType = operation.Allocation.FirstOrDefault().Category.Type;
+            switch (categoryType)
             {
                 case CategoryType.Expense:
-                    if (operation.Account.Type == AccountType.Credit)   
+                    if (operation.Account.Type == AccountType.Credit)
                     {
                         increaseDecrease = 1;
                     }
@@ -39,7 +39,7 @@ internal sealed class OperationCreatedEventHandler(IMediator mediator) : INotifi
                     }
                     break;
                 case CategoryType.Income:
-                    if (operation.Account.Type == AccountType.Credit)   
+                    if (operation.Account.Type == AccountType.Credit)
                     {
                         increaseDecrease = -1;
                     }
@@ -50,16 +50,37 @@ internal sealed class OperationCreatedEventHandler(IMediator mediator) : INotifi
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(categoryType), categoryType, null);
-            }  
+            }
+        }
+        else
+        {
+            // Transfer
+            if (operation.Account.Type == AccountType.Credit)
+            {
+                increaseDecrease = 1;
+            }
+            else
+            {
+                increaseDecrease = -1;
+            }
         }
 
-        var updateAccountBalCmd = new UpdateAccountBalanceCommand(operation.UserId, operation.AccountId, operation.TotalAmount*increaseDecrease);
+        var updateAccountBalCmd = new UpdateAccountBalanceCommand(operation.UserId, operation.AccountId, operation.TotalAmount * increaseDecrease);
         var result = await mediator.Send(updateAccountBalCmd, cancellationToken);
         //TODO: check result for errors
         // Inverse update on the Balance of the destination account if it is a transfer
         if (operation.Type == OperationType.Transfer && operation.DestinationAccountId.HasValue)
         {
-            var updateDestAccountBalCmd = new UpdateAccountBalanceCommand(operation.UserId, operation.DestinationAccountId.Value, operation.TotalAmount * increaseDecrease * -1);
+            // on Transfer, Destination account
+            if (operation.DestinationAccount.Type == AccountType.Credit)
+            {
+                increaseDecrease = -1;
+            }
+            else
+            {
+                increaseDecrease = 1;
+            }
+            var updateDestAccountBalCmd = new UpdateAccountBalanceCommand(operation.UserId, operation.DestinationAccountId.Value, operation.TotalAmount * increaseDecrease);
             var result2 = await mediator.Send(updateDestAccountBalCmd, cancellationToken);
             //TODO: check result2 for errors
         }

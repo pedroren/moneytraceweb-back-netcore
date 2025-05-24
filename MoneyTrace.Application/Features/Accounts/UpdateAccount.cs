@@ -86,13 +86,10 @@ public class UpdateAccountBalanceCommandHandler : IRequestHandler<UpdateAccountB
         {
             return Error.NotFound("Account not found.");
         }
+          
+        account.Balance += request.Balance;
 
-        if (account.Balance != request.Balance)
-        {
-            account.Balance = request.Balance;
-
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        await _context.SaveChangesAsync(cancellationToken);        
 
         return account;
     }
