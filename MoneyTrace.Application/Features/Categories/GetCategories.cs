@@ -54,4 +54,29 @@ public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery,
     }
 }
 
+public record GetSubCategoryByIdQuery(int UserId, int SubCategoryId) : IRequest<ErrorOr<SubCategoryEntity>>;
+public class GetSubCategoryByIdQueryHandler : IRequestHandler<GetSubCategoryByIdQuery, ErrorOr<SubCategoryEntity>>
+{
+    private readonly AppDbContext _context;
+
+    public GetSubCategoryByIdQueryHandler(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<ErrorOr<SubCategoryEntity>> Handle(GetSubCategoryByIdQuery request, CancellationToken cancellationToken)
+    {
+        var subCategory = await _context.SubCategories.AsNoTracking()
+          //.Include(x => x.Category)
+          .FirstOrDefaultAsync(x => x.Id == request.SubCategoryId && x.Category.UserId == request.UserId, cancellationToken);
+
+        if (subCategory == null)
+        {
+            return Error.NotFound("Subcategory not found.");
+        }
+
+        return subCategory;
+    }
+}
+
 

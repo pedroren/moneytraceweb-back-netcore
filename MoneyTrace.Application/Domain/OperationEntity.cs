@@ -23,7 +23,7 @@ public enum OperationType
     Transfer
 }
 
-public class OperationEntity
+public class OperationEntity: AuditableEntity, IHasDomainEvent
 {
     [Key]
     public int Id { get; set; }

@@ -33,6 +33,7 @@ namespace MoneyTrace.Application.Domain
     public int Id { get; set; }
     public string Name { get; set; }
     public bool IsEnabled { get; set; } = true;
+    public CategoryEntity Category { get; set; }
   }
 
   public enum CategoryType
