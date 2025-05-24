@@ -51,7 +51,7 @@ internal sealed class CreateCategoryCommandValidator : AbstractValidator<CreateC
             .WithMessage("Name is required.")
             .MaximumLength(100)
             .WithMessage("Name must not exceed 100 characters.")
-            .MustAsync((m, name, canToken) => BeUniqueName(m.UserId, name, CancellationToken.None))
+            .MustAsync((m, name, canToken) => BeUniqueName(m, name, CancellationToken.None))
             .WithMessage("An account with the same name already exists.");
         RuleFor(x => x.UserId)
             .GreaterThan(0)
@@ -63,9 +63,9 @@ internal sealed class CreateCategoryCommandValidator : AbstractValidator<CreateC
 
     }
 
-    private async Task<bool> BeUniqueName(int userId, string name, CancellationToken cancellationToken)
+    private async Task<bool> BeUniqueName(CreateCategoryCommand request, string name, CancellationToken cancellationToken)
     {
         return await _context.Categories
-            .AllAsync(x => x.UserId == userId && x.Name != name, cancellationToken);
+            .AnyAsync(x => x.UserId == request.UserId && x.Name != name, cancellationToken);
     }
 }
