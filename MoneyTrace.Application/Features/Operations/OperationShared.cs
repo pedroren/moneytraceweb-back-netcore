@@ -10,8 +10,8 @@ public record OperationCategoryModel(int CategoryId, int SubCategoryId, decimal 
 
 public abstract record OperationEntityCommand(int UserId, DateTime Date, string Title, OperationType Type, int? VendorId,
     int AccountId, int? DestinationAccountId, decimal TotalAmount, string Comments,
-    OperationCategoryModel[] Allocation);
-    
+    CategoryType? CategoryType, OperationCategoryModel[] Allocation);
+
 internal abstract class OperationEntityValidator<T> : AbstractValidator<T>
   where T : OperationEntityCommand
 {
@@ -44,13 +44,9 @@ internal abstract class OperationEntityValidator<T> : AbstractValidator<T>
           .Must((x, categories) => categories.Sum(c => c.Amount) == x.TotalAmount)
           .WithMessage("The sum of the allocations must be equal to the total amount.")
           //CategoryType must be the same for all categories
-          .Must((x, categories) =>
-          {
-            var categoryTypes = categories.Select(c => _context.Categories.Find(c.CategoryId).Type).Distinct();
-            return categoryTypes.Count() == 1;
-          })
+          .Must((x, categories) => categories.All(c => _context.Categories.Find(c.CategoryId).Type == x.CategoryType))
           .WithMessage("All categories must be of the same type.");
-    });
+  });
 
   }
 

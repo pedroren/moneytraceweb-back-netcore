@@ -10,10 +10,10 @@ namespace MoneyTrace.Application.Features.Operations;
 
 public record CreateOperationCommand(int UserId, DateTime Date, string Title, OperationType Type, int? VendorId,
     int AccountId, int? DestinationAccountId, decimal TotalAmount, string Comments,
-    OperationCategoryModel[] Allocation
+    CategoryType? CategoryType, OperationCategoryModel[] Allocation
 ) : OperationEntityCommand(UserId, Date, Title, Type, VendorId,
     AccountId, DestinationAccountId, TotalAmount, Comments,
-    Allocation), IRequest<ErrorOr<OperationEntity>>;
+    CategoryType, Allocation), IRequest<ErrorOr<OperationEntity>>;
 
 public class CreateOperationCommandHandler : IRequestHandler<CreateOperationCommand, ErrorOr<OperationEntity>>
 {
@@ -74,6 +74,7 @@ public class CreateOperationCommandHandler : IRequestHandler<CreateOperationComm
             DestinationAccount = destinationAccount,
             TotalAmount = request.TotalAmount,
             Comments = request.Comments,
+            CategoryType = request.CategoryType,
             Allocation = request.Allocation.Select((c, idx) => new OperationCategoryEntity
             {
                 CategoryId = c.CategoryId,

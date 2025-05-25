@@ -1,13 +1,15 @@
 namespace MoneyTrace.Application.Common;
 
 using System;
+using ErrorOr;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Features.Accounts;
 using MoneyTrace.Application.Features.Categories;
 using MoneyTrace.Application.Features.Vendors;
 
-internal sealed class UserCreatedEventHandler(IMediator mediator) : INotificationHandler<DomainEventNotification<UserCreatedEvent>>
+internal sealed class UserCreatedEventHandler(IMediator mediator, ILogger<UserCreatedEventHandler> logger) : INotificationHandler<DomainEventNotification<UserCreatedEvent>>
 {
     public async Task Handle(DomainEventNotification<UserCreatedEvent> notification, CancellationToken cancellationToken)
     {
@@ -16,16 +18,44 @@ internal sealed class UserCreatedEventHandler(IMediator mediator) : INotificatio
         Console.WriteLine($"User created: {domainEvent.Item.Name}");
 
         // Create default accounts and categories for new user
-        await CreateUserDefAccounts(domainEvent, cancellationToken);
-        await CreateUserDefCategories(domainEvent, cancellationToken);
-        await CreateUserDefVendors(domainEvent, cancellationToken);
+        var createAccTask = await CreateUserDefAccounts(domainEvent, cancellationToken);
+        var createCatTask = await CreateUserDefCategories(domainEvent, cancellationToken);
+        var createVendTask = await CreateUserDefVendors(domainEvent, cancellationToken);
 
+        // Check for errors in account creation
+        if (createAccTask.Any(errorOrAccount => errorOrAccount.IsError))
+        {
+            var errors = createAccTask.Where(errorOrAccount => errorOrAccount.IsError)
+                                       .Select(errorOrAccount => errorOrAccount.Errors)
+                                       .SelectMany(errors => errors);
+            logger.LogError($"Errors creating accounts: {string.Join(", ", errors.Select(e => e.Description))}");
+            //return;
+        }
+        // Check for errors in category creation
+        if (createCatTask.Any(errorOrCategory => errorOrCategory.IsError))
+        {
+            var errors = createCatTask.Where(errorOrCategory => errorOrCategory.IsError)
+                                       .Select(errorOrCategory => errorOrCategory.Errors)
+                                       .SelectMany(errors => errors);
+            logger.LogError($"Errors creating categories: {string.Join(", ", errors.Select(e => e.Description))}");
+            //return;
+        }
+        // Check for errors in vendor creation
+        if (createVendTask.Any(errorOrVendor => errorOrVendor.IsError))
+        {
+            var errors = createVendTask.Where(errorOrVendor => errorOrVendor.IsError)
+                                        .Select(errorOrVendor => errorOrVendor.Errors)
+                                        .SelectMany(errors => errors);
+            logger.LogError($"Errors creating vendors: {string.Join(", ", errors.Select(e => e.Description))}");
+            //return;
+        }
+        
         return;
     }
 
-    private async Task CreateUserDefCategories(UserCreatedEvent domainEvent, CancellationToken cancellationToken)
+    private async Task<ErrorOr<CategoryEntity>[]> CreateUserDefCategories(UserCreatedEvent domainEvent, CancellationToken cancellationToken)
     {
-        var taskList = new List<Task>();
+        var taskList = new List<Task<ErrorOr<CategoryEntity>>>();
 
         var category1 = new CreateCategoryCommand(domainEvent.Item.Id, "Food", CategoryType.Expense, ["Groceries", "Restaurants"]);
         taskList.Add(mediator.Send(category1, cancellationToken));
@@ -42,12 +72,12 @@ internal sealed class UserCreatedEventHandler(IMediator mediator) : INotificatio
         var category7 = new CreateCategoryCommand(domainEvent.Item.Id, "Other Income", CategoryType.Income, ["Other"]);
         taskList.Add(mediator.Send(category7, cancellationToken));
 
-        await Task.WhenAll(taskList);
+        return await Task.WhenAll(taskList);
     }
 
-    private async Task CreateUserDefAccounts(UserCreatedEvent domainEvent, CancellationToken cancellationToken)
+    private async Task<ErrorOr<AccountEntity>[]> CreateUserDefAccounts(UserCreatedEvent domainEvent, CancellationToken cancellationToken)
     {
-        var taskList = new List<Task>();
+        var taskList = new List<Task<ErrorOr<AccountEntity>>>();
 
         var account1 = new CreateAccountCommand(domainEvent.Item.Id, "Cash", "Cash account", 0, AccountType.Debit);
         taskList.Add(mediator.Send(account1, cancellationToken));
@@ -58,12 +88,12 @@ internal sealed class UserCreatedEventHandler(IMediator mediator) : INotificatio
         var account4 = new CreateAccountCommand(domainEvent.Item.Id, "Savings", "Savings account", 0, AccountType.Debit);
         taskList.Add(mediator.Send(account4, cancellationToken));
 
-        await Task.WhenAll(taskList);
+        return await Task.WhenAll(taskList);
     }
 
-    private async Task CreateUserDefVendors(UserCreatedEvent domainEvent, CancellationToken cancellationToken)
+    private async Task<ErrorOr<VendorEntity>[]> CreateUserDefVendors(UserCreatedEvent domainEvent, CancellationToken cancellationToken)
     {
-        var taskList = new List<Task>();
+        var taskList = new List<Task<ErrorOr<VendorEntity>>>();
 
         var vendor0 = new CreateVendorCommand(domainEvent.Item.Id, "Other");
         taskList.Add(mediator.Send(vendor0, cancellationToken));
@@ -74,7 +104,6 @@ internal sealed class UserCreatedEventHandler(IMediator mediator) : INotificatio
         var vendor3 = new CreateVendorCommand(domainEvent.Item.Id, "Costco");
         taskList.Add(mediator.Send(vendor3, cancellationToken));
 
-
-        await Task.WhenAll(taskList);
+        return await Task.WhenAll(taskList);
     }
 }

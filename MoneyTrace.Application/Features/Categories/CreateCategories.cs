@@ -65,7 +65,7 @@ internal sealed class CreateCategoryCommandValidator : AbstractValidator<CreateC
 
     private async Task<bool> BeUniqueName(CreateCategoryCommand request, string name, CancellationToken cancellationToken)
     {
-        return await _context.Categories
-            .AnyAsync(x => x.UserId == request.UserId && x.Name != name, cancellationToken);
+        return !await _context.Categories
+            .AnyAsync(x => x.UserId == request.UserId && x.Name == name, cancellationToken);
     }
 }

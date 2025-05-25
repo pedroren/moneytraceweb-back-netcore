@@ -9,9 +9,9 @@ namespace MoneyTrace.Application.Features.Operations;
 
 public record UpdateOperationCommand(int UserId, int OperationId, DateTime Date, string Title, OperationType Type,
     int? VendorId, int AccountId, int? DestinationAccountId, decimal TotalAmount, string Comments,
-    OperationCategoryModel[] Allocation) : OperationEntityCommand(UserId, Date, Title, Type, VendorId,
+    CategoryType? CategoryType, OperationCategoryModel[] Allocation) : OperationEntityCommand(UserId, Date, Title, Type, VendorId,
     AccountId, DestinationAccountId, TotalAmount, Comments,
-    Allocation), IRequest<ErrorOr<OperationEntity>>;
+    CategoryType, Allocation), IRequest<ErrorOr<OperationEntity>>;
 public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationCommand, ErrorOr<OperationEntity>>
 {
     private readonly AppDbContext _context;
@@ -44,7 +44,7 @@ public class UpdateOperationCommandHandler : IRequestHandler<UpdateOperationComm
         operation.DestinationAccount = request.DestinationAccountId.HasValue ? await _context.Accounts.FindAsync(request.DestinationAccountId) : null;
         operation.TotalAmount = request.TotalAmount;
         operation.Comments = request.Comments;
-
+        operation.CategoryType = request.CategoryType;
         // Clear existing categories
         operation.Allocation.Clear();
 

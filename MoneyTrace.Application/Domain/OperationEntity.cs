@@ -1,15 +1,4 @@
 //Aggregate root: Operation Entity, aka Transaction
-/*
-- Type: simple/transfer
-- Date: defaults to today 
-- Title: option to choose from predefined [[Template]] retrieving included info
-- [[Vendor]]
-- [[Category]] - [[Sub-category]] (only for simple)
-- [[Account]] (source for transfer)
-- Destination [[Account]] (only for transfer )
-- Amount
-- Comments
-*/
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +31,7 @@ public class OperationEntity: AuditableEntity, IHasDomainEvent
     public decimal TotalAmount { get; set; } = 0;
     public string Comments { get; set; } = string.Empty;
 
+    public CategoryType? CategoryType { get; set; } // Explicit type of Categories to use in the operation and affect the accounts
     public List<OperationCategoryEntity> Allocation { get; set; } = new();
     public int UserId { get; set; }
 

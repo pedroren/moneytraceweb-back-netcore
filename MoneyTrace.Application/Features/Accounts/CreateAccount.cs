@@ -58,9 +58,9 @@ internal sealed class CreateAccountCommandValidator : AbstractValidator<CreateAc
     /// <summary>
     /// Must be unique name for the user
     /// </summary>
-    private Task<bool> BeUniqueName(int userId, string name, CancellationToken cancellationToken)
+    private async Task<bool> BeUniqueName(int userId, string name, CancellationToken cancellationToken)
     {
-        return _context.Accounts
-            .AllAsync(l => l.UserId == userId && l.Name != name, cancellationToken);
+        return !await _context.Accounts
+            .AnyAsync(l => l.UserId == userId && l.Name == name, cancellationToken);
     }
 }

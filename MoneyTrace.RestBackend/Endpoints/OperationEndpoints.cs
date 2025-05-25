@@ -1,6 +1,7 @@
 namespace MoneyTrace.RestBackend;
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -65,10 +66,10 @@ public static class OperationEndpoints
           entity => TypedResults.Ok(entity.ToDto()),
           errors => errors.ToTypedResultsError());
     }
-    private static async Task<IResult> GetOperations(IMediator mediator, IUserSecurityService userSecService)
+    private static async Task<IResult> GetOperations([AsParameters]GetOperationByCriteriaQueryDto criteria, IMediator mediator, IUserSecurityService userSecService)
     {
         var userId = await userSecService.GetUserId();
-        var result = await mediator.Send(new GetOperationsQuery(userId));
+        var result = await mediator.Send(criteria.ToGetOperationByCriteriaCommand(userId));
         return result.Match<IResult>(
           entities => TypedResults.Ok(entities.Select(e => e.ToDto())),
           errors => errors.ToTypedResultsError());

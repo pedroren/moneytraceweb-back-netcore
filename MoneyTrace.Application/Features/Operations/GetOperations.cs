@@ -61,8 +61,10 @@ public class GetOperationByIdQueryHandler : IRequestHandler<GetOperationByIdQuer
         return operation;
     }
 }
-public record GetOperationByCriteriaQuery(int UserId, DateTime StartDate, DateTime EndDate, int? AccountId, int? CategoryId, int? VendorId, OperationType? Type) : IRequest<ErrorOr<List<OperationEntity>>>;
-public class GetOperationByCriteriaQueryHandler : IRequestHandler<GetOperationByCriteriaQuery, ErrorOr<List<OperationEntity>>>
+public record GetOperationByCriteriaQuery(int UserId, DateTime StartDate, DateTime EndDate, int? AccountId, int? CategoryId, int? VendorId, OperationType? Type,
+    int PageIdx=1, int PageSize=25) 
+    : IRequest<ErrorOr<IQueryable<OperationEntity>>>;
+public class GetOperationByCriteriaQueryHandler : IRequestHandler<GetOperationByCriteriaQuery, ErrorOr<IQueryable<OperationEntity>>>
 {
     private readonly AppDbContext _context;
 
@@ -71,7 +73,7 @@ public class GetOperationByCriteriaQueryHandler : IRequestHandler<GetOperationBy
         _context = context;
     }
 
-    public async Task<ErrorOr<List<OperationEntity>>> Handle(GetOperationByCriteriaQuery request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<IQueryable<OperationEntity>>> Handle(GetOperationByCriteriaQuery request, CancellationToken cancellationToken)
     {
         if (request.UserId <= 0)
         {
@@ -91,7 +93,7 @@ public class GetOperationByCriteriaQueryHandler : IRequestHandler<GetOperationBy
 
         if (request.AccountId.HasValue)
         {
-            query = query.Where(x => x.Account.Id == request.AccountId.Value);
+            query = query.Where(x => x.Account.Id == request.AccountId.Value || (x.DestinationAccountId.HasValue && x.DestinationAccountId == request.AccountId.Value));
         }
 
         if (request.CategoryId.HasValue)
@@ -101,7 +103,7 @@ public class GetOperationByCriteriaQueryHandler : IRequestHandler<GetOperationBy
 
         if (request.VendorId.HasValue)
         {
-            query = query.Where(x => x.Vendor.Id == request.VendorId.Value);
+            query = query.Where(x => x.Vendor != null && x.Vendor.Id == request.VendorId.Value);
         }
 
         if (request.Type.HasValue)
@@ -109,7 +111,9 @@ public class GetOperationByCriteriaQueryHandler : IRequestHandler<GetOperationBy
             query = query.Where(x => x.Type == request.Type);
         }
 
-        return await query.ToListAsync(cancellationToken);
+        // return await query.ToListAsync(cancellationToken);
+        return ErrorOrFactory.From(query.Take(request.PageSize)
+            .Skip((request.PageIdx - 1) * request.PageSize));
     }
 }
 public sealed class GetOperationByCriteriaQueryValidator : AbstractValidator<GetOperationByCriteriaQuery>
