@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record UpdateAccountCommand(int UserId, int Id, string Name, string Description, decimal Balance, AccountType Type, bool IsEnabled) : IRequest<ErrorOr<AccountEntity>>;
+public record UpdateAccountCommand(int UserId, int Id, string Name, string? Description, decimal Balance, AccountType Type, bool IsEnabled) : IRequest<ErrorOr<AccountEntity>>;
 public class UpdateAccountCommandHandler : IRequestHandler<UpdateAccountCommand, ErrorOr<AccountEntity>>
 {
     private readonly AppDbContext _context;

@@ -7,7 +7,7 @@ using MoneyTrace.Application.Infraestructure.Persistence;
 
 namespace MoneyTrace.Application.Features.Accounts;
 
-public record CreateAccountCommand(int UserId, string Name, string Description, decimal Balance, AccountType Type) : IRequest<ErrorOr<AccountEntity>>;
+public record CreateAccountCommand(int UserId, string Name, string? Description, decimal Balance, AccountType Type) : IRequest<ErrorOr<AccountEntity>>;
 
 public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand, ErrorOr<AccountEntity>>
 {

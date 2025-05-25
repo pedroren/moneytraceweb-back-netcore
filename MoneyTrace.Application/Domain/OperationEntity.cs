@@ -21,13 +21,13 @@ public class OperationEntity: AuditableEntity, IHasDomainEvent
     public OperationType Type { get; set; } = OperationType.Simple;
     public int? VendorId { get; set; }
     [ForeignKey(nameof(VendorId))]
-    public VendorEntity? Vendor { get; set; }
+    public virtual VendorEntity? Vendor { get; set; }
     public int AccountId { get; set; }
     [ForeignKey(nameof(AccountId))]
-    public AccountEntity Account { get; set; }
+    public virtual AccountEntity Account { get; set; }
     public int? DestinationAccountId { get; set; }
     [ForeignKey(nameof(DestinationAccountId))]
-    public AccountEntity? DestinationAccount { get; set; }
+    public virtual AccountEntity? DestinationAccount { get; set; }
     public decimal TotalAmount { get; set; } = 0;
     public string Comments { get; set; } = string.Empty;
 
@@ -46,10 +46,10 @@ public class OperationCategoryEntity
     public int Id { get; set; }
     public int CategoryId { get; set; }
     [ForeignKey(nameof(CategoryId))]
-    public CategoryEntity Category { get; set; }
+    public virtual CategoryEntity Category { get; set; }
     public int SubCategoryId { get; set; }
     [ForeignKey(nameof(SubCategoryId))]
-    public SubCategoryEntity SubCategory { get; set; }
+    public virtual SubCategoryEntity SubCategory { get; set; }
     public decimal Amount { get; set; } = 0;
     public int Order { get; set; }
 }

@@ -1,8 +1,3 @@
-/*- Title
-- Type: Debit, Credit
-- Balance
-- Enabled*/
-
 using System.ComponentModel.DataAnnotations;
 using MoneyTrace.Application.Common;
 
@@ -19,7 +14,7 @@ namespace MoneyTrace.Application.Domain
         [Key]
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; } = string.Empty;
         public decimal Balance { get; set; } = 0;
         public AccountType Type { get; set; } = AccountType.Credit; // Debit or Credit
         public bool IsEnabled { get; set; } = true;
