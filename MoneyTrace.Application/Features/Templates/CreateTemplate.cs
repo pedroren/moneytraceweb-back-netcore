@@ -9,8 +9,8 @@ using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Features.Operations;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record CreateTemplateCommand(int UserId, string Title, int? VendorId,
-    int AccountId, decimal TotalAmount,
+public record CreateTemplateCommand(int UserId, string Title, OperationType Type, int? VendorId,
+    int AccountId, int? DestinationAccountId, decimal TotalAmount,
     CategoryType? CategoryType, OperationCategoryModel[] Allocation) : IRequest<ErrorOr<TemplateEntity>>;
 
 public class CreateTemplateCommandHandler : IRequestHandler<CreateTemplateCommand, ErrorOr<TemplateEntity>>
@@ -56,8 +56,10 @@ public class CreateTemplateCommandHandler : IRequestHandler<CreateTemplateComman
             UserId = request.UserId,
             IsEnabled = true,
             Title = request.Title,
+            Type = request.Type,
             VendorId = vendor?.Id,
             AccountId = account.Id,
+            DestinationAccountId = request.DestinationAccountId,
             TotalAmount = request.TotalAmount,
             CategoryType = request.CategoryType ?? CategoryType.Expense,
             Allocation = request.Allocation.Select((c, idx) => new OperationCategoryEntity

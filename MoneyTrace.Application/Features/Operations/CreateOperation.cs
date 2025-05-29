@@ -98,6 +98,7 @@ internal sealed class CreateOperationCommandValidator : OperationEntityValidator
 {
     public CreateOperationCommandValidator(AppDbContext context) : base(context)
     {
+        
     }
 }
 

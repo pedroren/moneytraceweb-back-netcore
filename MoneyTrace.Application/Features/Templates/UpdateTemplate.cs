@@ -9,8 +9,8 @@ using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Features.Operations;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record UpdateTemplateCommand(int UserId, int Id, string Title, int? VendorId,
-    int AccountId, decimal TotalAmount,
+public record UpdateTemplateCommand(int UserId, int Id, string Title, OperationType Type, int? VendorId,
+    int AccountId, int? DestinationAccountId, decimal TotalAmount,
     CategoryType? CategoryType, OperationCategoryModel[] Allocation, bool IsEnabled) : IRequest<ErrorOr<TemplateEntity>>;
 public class UpdateTemplateCommandHandler : IRequestHandler<UpdateTemplateCommand, ErrorOr<TemplateEntity>> 
 {
@@ -61,8 +61,10 @@ public class UpdateTemplateCommandHandler : IRequestHandler<UpdateTemplateComman
 
         template.IsEnabled = request.IsEnabled;
         template.Title = request.Title;
+        template.Type = request.Type;
         template.VendorId = vendor?.Id;
         template.AccountId = account.Id;
+        template.DestinationAccountId = request.DestinationAccountId;
         template.TotalAmount = request.TotalAmount;
         template.CategoryType
             = request.CategoryType ?? CategoryType.Expense;

@@ -32,6 +32,7 @@ public class AppDbContext : DbContext//, IAppDbContext
 
     public DbSet<OperationEntity> Operations { get; set; }
     public DbSet<TemplateEntity> Templates { get; internal set; }
+    public DbSet<BillEntity> Bills { get; internal set; }
 
     //Insert sample data when creating the database
     protected override void OnModelCreating(ModelBuilder modelBuilder)

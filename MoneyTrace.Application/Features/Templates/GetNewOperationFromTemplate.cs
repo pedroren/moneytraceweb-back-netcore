@@ -9,8 +9,8 @@ using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Features.Operations;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record GetNewOperationFromTemplateQuery(int UserId, int TemplateId) : IRequest<ErrorOr<OperationEntity>>;
-public class GetNewOperationFromTemplateQueryHandler : IRequestHandler<GetNewOperationFromTemplateQuery, ErrorOr<OperationEntity>>
+public record GetNewOperationFromTemplateQuery(int UserId, int TemplateId) : IRequest<ErrorOr<CreateOperationCommand>>;
+public class GetNewOperationFromTemplateQueryHandler : IRequestHandler<GetNewOperationFromTemplateQuery, ErrorOr<CreateOperationCommand>>
 {
     private readonly AppDbContext _context;
 
@@ -19,7 +19,7 @@ public class GetNewOperationFromTemplateQueryHandler : IRequestHandler<GetNewOpe
         _context = context;
     }
 
-    public async Task<ErrorOr<OperationEntity>> Handle(GetNewOperationFromTemplateQuery request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<CreateOperationCommand>> Handle(GetNewOperationFromTemplateQuery request, CancellationToken cancellationToken)
     {
         var template = await _context.Templates
             .Include(t => t.Allocation)
@@ -33,22 +33,11 @@ public class GetNewOperationFromTemplateQueryHandler : IRequestHandler<GetNewOpe
             return Error.NotFound("Template not found.");
         }
 
-        var operation = new OperationEntity
-        {
-            UserId = request.UserId,
-            Title = template.Title,
-            VendorId = template.VendorId,
-            AccountId = template.AccountId,
-            TotalAmount = template.TotalAmount,
-            CategoryType = template.CategoryType,
-            Allocation = template.Allocation.Select(a => new OperationCategoryEntity
-            {
-                CategoryId = a.CategoryId,
-                SubCategoryId = a.SubCategoryId,
-                Amount = a.Amount
-            }).ToList()
-        };
-
+        var operation = new CreateOperationCommand(request.UserId, DateTime.Today, template.Title, template.Type, template.VendorId,
+            template.AccountId, template.DestinationAccountId, template.TotalAmount, string.Empty, template.CategoryType,
+            template.Allocation.Select(a => new OperationCategoryModel(a.CategoryId, a.SubCategoryId, a.Amount)).ToArray()
+            );
+        
         return operation;
     }
 }
