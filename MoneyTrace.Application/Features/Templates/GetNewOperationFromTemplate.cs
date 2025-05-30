@@ -37,7 +37,45 @@ public class GetNewOperationFromTemplateQueryHandler : IRequestHandler<GetNewOpe
             template.AccountId, template.DestinationAccountId, template.TotalAmount, string.Empty, template.CategoryType,
             template.Allocation.Select(a => new OperationCategoryModel(a.CategoryId, a.SubCategoryId, a.Amount)).ToArray()
             );
+
+        return operation;
+    }
+}
+
+public record GetNewOperationForPaymentQuery(int UserId, int TemplateId, DateTime PaymentDate, string Title, decimal Amount, string Comments) 
+    : IRequest<ErrorOr<CreateOperationCommand>>;
+public class GetNewOperationForPaymentQueryHandler : IRequestHandler<GetNewOperationForPaymentQuery, ErrorOr<CreateOperationCommand>>
+{
+    private readonly IMediator _mediator;
+
+    public GetNewOperationForPaymentQueryHandler(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    public async Task<ErrorOr<CreateOperationCommand>> Handle(GetNewOperationForPaymentQuery request, CancellationToken cancellationToken)
+    {
+        var operationQuery = await _mediator.Send(
+            new GetNewOperationFromTemplateQuery(request.UserId, request.TemplateId), cancellationToken);
         
+        if (operationQuery.IsError)
+        {
+            return operationQuery.Errors;
+        }
+
+        // Customize the operation for the payment
+        var operation = operationQuery.Value with
+        {
+            Date = request.PaymentDate,
+            Title = request.Title,
+            TotalAmount = request.Amount,
+            Comments = request.Comments,
+            Allocation = operationQuery.Value.Allocation.Select(a => new OperationCategoryModel(
+                a.CategoryId,
+                a.SubCategoryId,
+                request.Amount)).ToArray() // Set the first allocation amount to the payment amount, only supports 1
+        };
+
         return operation;
     }
 }

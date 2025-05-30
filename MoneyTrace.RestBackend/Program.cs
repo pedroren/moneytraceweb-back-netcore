@@ -90,6 +90,7 @@ app.MapCategoryEndpoints();
 app.MapVendorEndpoints();
 app.MapOperationEndpoints();
 app.MapTemplateEndpoints();
+app.MapBillEndpoints();
 
 // Seed initial data for InMemory database
 using (var scope = app.Services.CreateScope())

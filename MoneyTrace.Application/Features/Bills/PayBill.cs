@@ -3,7 +3,6 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
-using MoneyTrace.Application.Features.Operations;
 using MoneyTrace.Application.Features.Templates;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
@@ -19,8 +18,7 @@ public class PayBillCommandHandler : IRequestHandler<PayBillCommand, ErrorOr<Bil
     {
         _context = context;
         _mediator = mediator;
-    }
-
+    }        
 
     public async Task<ErrorOr<BillEntity>> Handle(PayBillCommand request, CancellationToken cancellationToken)
     {
@@ -41,26 +39,13 @@ public class PayBillCommandHandler : IRequestHandler<PayBillCommand, ErrorOr<Bil
         }
 
         //1) Create Operation Record
-        var operationQuery = await _mediator.Send(
-            new GetNewOperationFromTemplateQuery(request.UserId, bill.TemplateId), cancellationToken);
-        if (operationQuery.IsError)
+        var operationTemplate = await _mediator.Send(
+            new GetNewOperationForPaymentQuery(request.UserId, bill.TemplateId, request.PaymentDate, $"Payment for {bill.Name}", request.Amount, request.Comments), cancellationToken);
+        if (operationTemplate.IsError)
         {
-            return operationQuery.Errors;
-        }
-        // Customize the operation for the payment
-        var operation = operationQuery.Value with
-        {
-            Date = request.PaymentDate,
-            Title = $"Payment for {bill.Name}",
-            TotalAmount = request.Amount,
-            Comments = request.Comments,
-            Allocation = operationQuery.Value.Allocation.Select(a => new OperationCategoryModel(
-                a.CategoryId,
-                a.SubCategoryId,
-                request.Amount)).ToArray() // Set the first allocation amount to the payment amount, only supports 1
-        };
-        
-        var createOperation = await _mediator.Send(operation, cancellationToken);
+            return operationTemplate.Errors;
+        }        
+        var createOperation = await _mediator.Send(operationTemplate.Value, cancellationToken);
         if (createOperation.IsError)
         {
             return createOperation.Errors;
@@ -83,7 +68,7 @@ public class PayBillCommandHandler : IRequestHandler<PayBillCommand, ErrorOr<Bil
         }
         else
         {
-            // If not fully paid, reduce the amount due
+            // If not fully paid, just reduce the amount due
             bill.NextDueAmount -= request.Amount;
         }
         return bill;

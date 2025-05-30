@@ -16,6 +16,7 @@ namespace MoneyTrace.Application.Domain;
     public bool IsEnabled { get; set; } = true;
     public string DateFormat { get; set; } = "yyyy-MM-dd";
     public string TimeZone { get; set; } = "UTC";
+    public bool AutoCreateBudget { get; set; } = true; // Auto-create next budget on user creation or new period start
     
     [NotMapped]
     public List<DomainEvent> DomainEvents { get; private set; } = [];
