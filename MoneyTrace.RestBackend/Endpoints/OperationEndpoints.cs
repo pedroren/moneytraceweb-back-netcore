@@ -1,7 +1,6 @@
 namespace MoneyTrace.RestBackend;
 
 using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

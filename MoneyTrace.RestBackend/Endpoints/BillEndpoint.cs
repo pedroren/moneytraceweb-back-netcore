@@ -18,7 +18,7 @@ public static class BillEndpoints
             .WithName("GetBills");
 
         group.MapGet("/active", GetBillsActive)
-            .WithName("GetBills");
+            .WithName("GetBillsActive");
 
         group.MapGet("/{id}", GetBillById)
             .WithName("GetBillById");

@@ -1,4 +1,7 @@
-namespace MoneyTrace.Application.Features.Budgets;
+public record BudgetCategoryModel(
+    int Id,
+    int CategoryId,
+    decimal Amount);
 
 public record BudgetReportModel(
     int UserId,
@@ -12,4 +15,4 @@ public record BudgetCategoryReportModel(
     string CategoryName,
     decimal BudgetedAmount,
     decimal SpentAmount,
-    decimal RemainingAmount);
+    decimal RemainingAmount);    

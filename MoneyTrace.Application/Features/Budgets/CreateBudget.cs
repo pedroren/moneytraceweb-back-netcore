@@ -13,7 +13,7 @@ public record CreateBudgetCommand(
     decimal Amount,
     DateTime StartDate,
     DateTime EndDate,
-    BudgetCategoryEntity[] BudgetCategories) : IRequest<ErrorOr<BudgetEntity>>;
+    BudgetCategoryModel[] BudgetCategories) : IRequest<ErrorOr<BudgetEntity>>;
 public class CreateBudgetCommandHandler : IRequestHandler<CreateBudgetCommand, ErrorOr<BudgetEntity>>
 {
     private readonly AppDbContext _context;
@@ -33,7 +33,11 @@ public class CreateBudgetCommandHandler : IRequestHandler<CreateBudgetCommand, E
             StartDate = request.StartDate,
             EndDate = request.EndDate,
             Frequency = Frequency.Monthly, // Default frequency
-            Categories = request.BudgetCategories.ToList(),
+            Categories = request.BudgetCategories.Select(c => new BudgetCategoryEntity
+            {
+                CategoryId = c.CategoryId,
+                Amount = c.Amount
+            }).ToList(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -129,11 +133,8 @@ public class CreateNextBudgetCommandHandler : IRequestHandler<CreateNextBudgetCo
             Amount: existingBudget.Amount,
             StartDate: startDate,
             EndDate: endDate, // Assuming monthly frequency
-            BudgetCategories: existingBudget.Categories.Select(c => new BudgetCategoryEntity
-            {
-                CategoryId = c.CategoryId,
-                Amount = c.Amount
-            }).ToArray());        
+            BudgetCategories: existingBudget.Categories.Select(c =>
+                new BudgetCategoryModel(0, c.CategoryId, c.Amount)).ToArray());        
 
         var createBudget = await _mediator.Send(nextBudget, cancellationToken);
         if (createBudget.IsError)

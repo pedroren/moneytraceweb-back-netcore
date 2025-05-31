@@ -58,5 +58,21 @@ public static class OperationDtoExtensions
 
     public static GetOperationByCriteriaQuery ToGetOperationByCriteriaCommand(this GetOperationByCriteriaQueryDto dto, int userId) =>
         new(userId, dto.StartDate, dto.EndDate, dto.AccountId, dto.CategoryId, dto.VendorId, dto.Type, dto.PageIdx, dto.PageSize);
+
+    public static OperationDto ToDto(this CreateOperationCommand command)
+    {
+        return new OperationDto(
+            0, // Id will be set by the database
+            command.Date,
+            command.Title.Trim(),
+            command.Type,
+            command.VendorId,
+            command.AccountId,
+            command.DestinationAccountId,
+            command.TotalAmount,
+            command.Comments,
+            command.CategoryType,
+            command.Allocation);
+    }
 }
 
