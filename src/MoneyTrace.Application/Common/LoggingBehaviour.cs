@@ -18,7 +18,7 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
     {
         var requestName = typeof(TRequest).Name;
         
-        _logger.LogInformation("Handling request: {RequestName} {Request}", requestName, request);
+        _logger.LogInformation("Handling request: {@RequestName} {@Request}", requestName, request);
 
         TResponse response;
         var stopwatch = Stopwatch.StartNew();
@@ -29,7 +29,7 @@ public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest,
         finally
         {
             stopwatch.Stop();
-            _logger.LogInformation("Handled request: {RequestName}, Execution time: {ExecutionTime}ms", requestName, stopwatch.ElapsedMilliseconds);
+            _logger.LogInformation("Handled request: {@RequestName}, Execution time: {@ExecutionTime}ms", requestName, stopwatch.ElapsedMilliseconds);
         }
         return response;
     }
