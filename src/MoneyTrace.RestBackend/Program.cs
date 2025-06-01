@@ -5,8 +5,12 @@ using MoneyTrace.Application;
 using MoneyTrace.Application.Infraestructure.Persistence;
 using MoneyTrace.RestBackend;
 using MoneyTrace.RestBackend.Security;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("MoneyTraceDb"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -50,6 +54,8 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
 });
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 app.UseAuthentication();
 app.UseAuthorization();

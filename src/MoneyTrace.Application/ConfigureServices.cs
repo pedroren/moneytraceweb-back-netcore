@@ -14,6 +14,7 @@ public static class ConfigureServices
         {
             cfg.RegisterServicesFromAssembly(typeof(ConfigureServices).Assembly);
             cfg.AddOpenBehavior(typeof(ValidationBehaviour<,>));
+            cfg.AddOpenBehavior(typeof(LoggingBehaviour<,>));
         });
         services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly, includeInternalTypes: true);
         return services;
