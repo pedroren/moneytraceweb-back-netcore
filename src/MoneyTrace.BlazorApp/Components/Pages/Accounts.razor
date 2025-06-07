@@ -1,0 +1,70 @@
+@page "/accounts"
+@using ErrorOr
+@using MediatR
+@using MoneyTrace.Application.Domain
+@using MoneyTrace.Application.Features.Accounts
+@rendermode InteractiveServer
+@inject ILogger<Accounts> logger
+@inject IMediator mediator
+
+<PageTitle>Account CRUD</PageTitle>
+
+<h1>Accounts</h1>
+
+<p role="status">Current user: @userId</p>
+@if (accounts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Balance</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var account in accounts)
+            {
+                <tr>
+                    <td>@account.Name</td>
+                    <td>@account.Type</td>
+                    <td>@account.Balance</td>
+                    <td>@account.IsEnabled</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@* <button class="btn btn-primary" @onclick="IncrementCount">Click me</button> *@
+
+@code {
+    private int userId = 1;
+    private List<AccountEntity>? accounts;
+
+    @* [Inject]
+    private ILogger<Accounts> logger { get; set; }
+    [Inject]
+    private IMediator mediator { get; set; } *@
+
+    protected override async Task OnInitializedAsync(){
+        var accountsResult = await GetAccountList();
+        if (accountsResult.IsError)
+        {
+            logger.LogError("Failed to retrieve accounts: {Error}", accountsResult.Errors);
+            return;
+        }
+        accounts = accountsResult.Value;
+    }
+
+    private async Task<ErrorOr<List<AccountEntity>>> GetAccountList()
+    {
+        var query = new GetUserAccountsQuery(userId);
+        var result = await mediator.Send(query);
+        return result;
+    }
+}
