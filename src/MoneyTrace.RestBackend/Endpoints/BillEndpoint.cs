@@ -3,8 +3,9 @@ using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MoneyTrace.Application.Features.Bills;
+using MoneyTrace.Application.Infraestructure.Services;
 using MoneyTrace.RestBackend.Dto;
-using MoneyTrace.RestBackend.Security;
+
 
 namespace MoneyTrace.RestBackend;
 

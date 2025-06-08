@@ -3,9 +3,11 @@
 @using MediatR
 @using MoneyTrace.Application.Domain
 @using MoneyTrace.Application.Features.Accounts
+@using MoneyTrace.Application.Infraestructure.Services
 @rendermode InteractiveServer
 @inject ILogger<Accounts> logger
 @inject IMediator mediator
+@inject IUserSecurityService UserSecurityService
 
 <PageTitle>Account CRUD</PageTitle>
 
@@ -45,11 +47,6 @@ else
 @code {
     private int userId = 1;
     private List<AccountEntity>? accounts;
-
-    @* [Inject]
-    private ILogger<Accounts> logger { get; set; }
-    [Inject]
-    private IMediator mediator { get; set; } *@
 
     protected override async Task OnInitializedAsync(){
         var accountsResult = await GetAccountList();

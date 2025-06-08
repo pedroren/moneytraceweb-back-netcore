@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Features.Users;
 using MoneyTrace.Application.Infraestructure.Persistence;
+using MoneyTrace.Application.Infraestructure.Services;
 using MoneyTrace.RestBackend.Dto;
 using MoneyTrace.RestBackend.Security;
 

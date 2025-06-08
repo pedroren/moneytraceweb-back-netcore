@@ -9,14 +9,14 @@ using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application.Domain;
 using MoneyTrace.Application.Infraestructure.Persistence;
 
-public record GetVendorsByUserQuery(int UserId) : IRequest<ErrorOr<VendorEntity[]>>;
-public class GetVendorsByUserQueryHandler(AppDbContext context) : IRequestHandler<GetVendorsByUserQuery, ErrorOr<VendorEntity[]>>
+public record GetVendorsByUserQuery(int UserId) : IRequest<ErrorOr<List<VendorEntity>>>;
+public class GetVendorsByUserQueryHandler(AppDbContext context) : IRequestHandler<GetVendorsByUserQuery, ErrorOr<List<VendorEntity>>>
 {
-    public async Task<ErrorOr<VendorEntity[]>> Handle(GetVendorsByUserQuery request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<List<VendorEntity>>> Handle(GetVendorsByUserQuery request, CancellationToken cancellationToken)
     {
         var vendors = await context.Vendors.AsNoTracking()
             .Where(x => x.UserId == request.UserId)
-            .ToArrayAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
 
         return vendors;
     }

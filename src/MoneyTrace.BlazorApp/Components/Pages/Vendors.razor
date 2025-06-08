@@ -1,0 +1,268 @@
+@page "/vendors"
+@using ErrorOr
+@using MediatR
+@using MoneyTrace.Application.Domain
+@using MoneyTrace.Application.Features.Vendors
+@using MoneyTrace.Application.Infraestructure.Services
+@using MoneyTrace.BlazorApp.Dto
+@using MoneyTrace.BlazorApp.Services
+@using Microsoft.JSInterop
+@rendermode InteractiveServer
+@inject IUserSecurityService UserSecurityService
+@inject IMediator mediator
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Vendors CRUD</PageTitle>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row mb-3">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="ShowCreateModal">
+                <i class="fas fa-plus"></i> Add New Vendor
+            </button>
+        </div>
+    </div>
+
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="ClearError"></button>
+        </div>
+    }
+
+    @if (successMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="ClearSuccess"></button>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (vendors?.Any() == true)
+                {
+                    @foreach (var vendor in vendors)
+                    {
+                        <tr>
+                            <td>@vendor.Id</td>
+                            <td>@vendor.Name</td>
+                            <td>@vendor.IsEnabled</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => EditVendor(vendor)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => ShowDeleteConfirmation(vendor)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No vendors found</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<!-- Create/Edit Modal -->
+@if (showModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isEditing ? "Edit Vendor" : "Create New Vendor")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="currentVendor" OnValidSubmit="SaveVendor">
+                        @* <DataAnnotationsValidator />
+                        <ValidationSummary /> *@
+                        @if (errorMessage != null)
+                        {
+                            <div class="alert alert-danger">
+                                @errorMessage
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <InputText id="name" class="form-control" @bind-Value="currentVendor.Name" />
+                            <ValidationMessage For="@(() => currentVendor.Name)" />
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <InputCheckbox id="isenabled" class="form-check-input" @bind-Value="currentVendor.IsEnabled" role="switch"/>
+                            <label for="isenabled" class="form-check-label">Active</label>
+                            <ValidationMessage For="@(() => currentVendor.IsEnabled)" />
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                @(isEditing ? "Update" : "Create")
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    private List<VendorDto> vendors = new();
+    private VendorDto currentVendor = new();
+    private bool showModal = false;
+    private bool isEditing = false;
+    private bool isLoading = false;
+    private bool isSaving = false;
+    private string? errorMessage;
+    private string? successMessage;
+    private int userId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = await UserSecurityService.GetUserId();
+        await LoadVendors();
+    }
+
+    private async Task LoadVendors()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        var query = new GetVendorsByUserQuery(userId);
+        var result = await mediator.Send(query);
+
+        if (result.IsError)
+        {
+            errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+        }
+        else
+        {
+            vendors = result.Value.Select(x => x.ToDto()).ToList();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SaveVendor()
+    {
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+
+        ErrorOr<VendorEntity> result;
+
+        if (isEditing)
+        {
+            result = await mediator.Send(currentVendor.ToUpdateCommand(userId));
+        }
+        else
+        {
+            result = await mediator.Send(currentVendor.ToCreateCommand(userId));
+        }
+
+        if (result.IsError)
+        {
+            errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+        }
+        else
+        {
+            successMessage = $"Vendor {(isEditing ? "updated" : "created")} successfully!";
+            CloseModal();
+            await LoadVendors();
+        }
+
+        isSaving = false;
+        StateHasChanged();
+    }
+
+    private void ShowCreateModal()
+    {
+        currentVendor = new(0, string.Empty, true);
+        isEditing = false;
+        showModal = true;
+    }
+
+    private void EditVendor(VendorDto vendor)
+    {
+        currentVendor = vendor;
+        isEditing = true;
+        showModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        currentVendor = new();
+        isEditing = false;
+    }
+
+    private async Task ShowDeleteConfirmation(VendorDto vendor)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
+            $"Are you sure you want to delete '{vendor.Name}'?");
+        
+        if (confirmed)
+        {
+            await DeleteVendor(vendor.Id);
+        }
+    }
+
+    private async Task DeleteVendor(int id)
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        var result = await mediator.Send(new DeleteVendorCommand(id, userId));
+
+        if (result.IsError)
+        {
+            errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+        }
+        else
+        {
+            successMessage = "Vendor deleted successfully!";
+            await LoadVendors();
+        }
+
+        StateHasChanged();
+    }
+
+    private void ClearError() => errorMessage = null;
+    private void ClearSuccess() => successMessage = null;
+}

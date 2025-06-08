@@ -1,0 +1,105 @@
+@* Custom validator component for ErrorOr integration *@
+@using Microsoft.AspNetCore.Components.Forms
+@using ErrorOr
+@using MoneyTrace.BlazorApp.Extensions
+@implements IDisposable
+
+@code {
+    private EditContext? _editContext;
+    private ValidationMessageStore? _messageStore;
+
+    [CascadingParameter] 
+    private EditContext? CascadedEditContext { get; set; }
+
+    [Parameter] 
+    public List<Error>? ValidationErrors { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (CascadedEditContext == null)
+        {
+            throw new InvalidOperationException($"{nameof(ErrorOrValidator)} requires a cascading parameter of type {nameof(EditContext)}.");
+        }
+
+        _editContext = CascadedEditContext;
+        _messageStore = new ValidationMessageStore(_editContext);
+        
+        // Clear any existing validation state
+        _messageStore.Clear();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_editContext != null && _messageStore != null)
+        {
+            _messageStore.Clear();
+            
+            if (ValidationErrors?.Any() == true)
+            {
+                foreach (var error in ValidationErrors)
+                {
+                    // Try to map error to specific field, otherwise add as form-level error
+                    var fieldName = GetFieldNameFromError(error);
+                    if (!string.IsNullOrEmpty(fieldName))
+                    {
+                        var fieldIdentifier = _editContext.Field(fieldName);
+                        _messageStore.Add(fieldIdentifier, error.Description);
+                    }
+                    else
+                    {
+                        // Add as model-level error
+                        var fieldIdentifier = new FieldIdentifier(_editContext.Model, string.Empty);
+                        _messageStore.Add(fieldIdentifier, error.Description);
+                    }
+                }
+            }
+            
+            _editContext.NotifyValidationStateChanged();
+        }
+    }
+
+    private string GetFieldNameFromError(Error error)
+    {
+        // This method should map your FluentValidation property names to model properties
+        // You might need to customize this based on how your FluentValidation is set up
+        
+        // If your FluentValidation uses property names as error codes
+        if (!string.IsNullOrEmpty(error.Code) && IsValidPropertyName(error.Code))
+        {
+            return error.Code;
+        }
+
+        // If the error description contains property info, you could parse it
+        // Example: "Name is required" -> "Name"
+        // This is a simple approach - you might want something more sophisticated
+        return ExtractPropertyNameFromDescription(error.Description);
+    }
+
+    private bool IsValidPropertyName(string code)
+    {
+        // Simple validation - customize based on your needs
+        return !string.IsNullOrEmpty(code) && 
+               char.IsUpper(code[0]) && 
+               code.All(c => char.IsLetterOrDigit(c));
+    }
+
+    private string ExtractPropertyNameFromDescription(string description)
+    {
+        // Simple extraction - you might want to make this more sophisticated
+        // based on your FluentValidation message patterns
+        var words = description.Split(' ');
+        var firstWord = words.FirstOrDefault();
+        
+        if (!string.IsNullOrEmpty(firstWord) && char.IsUpper(firstWord[0]))
+        {
+            return firstWord;
+        }
+        
+        return string.Empty;
+    }
+
+    public void Dispose()
+    {
+        _messageStore?.Clear();
+    }
+}

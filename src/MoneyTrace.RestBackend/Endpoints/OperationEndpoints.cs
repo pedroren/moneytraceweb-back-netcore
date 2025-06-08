@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MoneyTrace.Application.Features.Operations;
+using MoneyTrace.Application.Infraestructure.Services;
 using MoneyTrace.RestBackend.Dto;
 using MoneyTrace.RestBackend.Security;
 

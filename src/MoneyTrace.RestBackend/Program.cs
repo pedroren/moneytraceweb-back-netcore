@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MoneyTrace.Application;
 using MoneyTrace.Application.Infraestructure.Persistence;
+using MoneyTrace.Application.Infraestructure.Services;
 using MoneyTrace.RestBackend;
 using MoneyTrace.RestBackend.Security;
 using Serilog;
