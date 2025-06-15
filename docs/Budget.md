@@ -1,3 +1,3 @@
 - Monthly 
-- [[Category]]
+- [Category](Category)
 - Amount

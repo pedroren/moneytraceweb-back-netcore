@@ -1,3 +1,3 @@
-- [[Category]] Summary 
-- [[Bill]] due soon
-- [[Budget]] vs Expenses
+- [Category](Category) Summary 
+- [Bill](Bill) due soon
+- [Budget](Budget) vs Expenses

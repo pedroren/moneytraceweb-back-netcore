@@ -1,2 +1,2 @@
-- .[[Net Core Backend]], Angular, PrimeNG
+- .[Net Core Backend](Net%20Core%20Backend), [Angular](Angular)
 - NodeJS, React

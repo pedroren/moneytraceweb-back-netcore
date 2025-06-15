@@ -1,6 +1,7 @@
 - id/email
+- Name
 - Password
 - Enabled
 - Currency Symbol
 - Date Format
-- Timezone?
+- Timezone

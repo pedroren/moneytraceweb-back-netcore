@@ -1,4 +1,4 @@
-- Start [[Main Input form]]
-- Retrieve [[Template]] info
+- Start [Main Input form](Main%20Input%20form)
+- Retrieve [Template](Template) info
 - Optional modify amount 
-- On submit, update [[Bill]] last paid fields and calculate next due date
+- On submit, update [Bill](Bill) last paid fields and calculate next due date

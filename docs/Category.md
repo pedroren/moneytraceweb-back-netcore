@@ -1,4 +1,4 @@
 - Title
 - Type (expense, income)
 - Enabled
-- List of [[Sub-category]]
+- List of [Sub-category](Sub-category.md)

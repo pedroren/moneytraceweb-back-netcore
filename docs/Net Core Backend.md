@@ -3,4 +3,4 @@
 - [Vertical Slice Architecture](https://nadirbad.dev/vertical-slice-architecture-dotnet)
 - Clean Code
 - Mediator
-- .Net Framework InMemory database
+- .Net Framework In-memory database

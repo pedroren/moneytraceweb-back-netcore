@@ -1,3 +1,3 @@
 - Title
 - Enabled
-- Parent [[Category]]
+- Parent [Category](Category)

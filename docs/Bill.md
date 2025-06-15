@@ -1,6 +1,6 @@
-- [[Template]]
+- [Template](Template)
 - Payment frequency (monthly, weekly, biweekly, yearly)
 - Next due date 
 - Last paid date
 - Last paid amount 
-- [[Pay Bill action]]
+- [Pay Bill action](Pay%20Bill%20action)

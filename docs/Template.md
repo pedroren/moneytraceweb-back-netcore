@@ -1,7 +1,7 @@
 - Type: simple/transfer
 - Title
-- [[Category]] (only for simple)
-- [[Sub-category]] (only for simple)
-- [[Account]] (source for transfer)
-- Destination [[Account]] (only for transfer)
+- [Category](Category) (only for simple)
+- [Sub-category](Sub-category) (only for simple)
+- [Account](Account) (source for transfer)
+- Destination [Account](Account) (only for transfer)
 - Amount

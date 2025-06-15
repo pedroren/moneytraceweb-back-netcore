@@ -1,5 +1,5 @@
 
-[[Entities]]
-[[Features]]
-[[Screens]]
-[[Frameworks]]
+[Entities](Entities.md)
+[Features](Features.md)
+[Screens](Screens.md)
+[Frameworks](Frameworks.md)

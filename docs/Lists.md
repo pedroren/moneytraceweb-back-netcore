@@ -1,4 +1,4 @@
-- [[Account]] CRUD
-- [[Vendor]] CRUD
-- [[Category]] CRUD
-- [[Template]] CRUD
+- [Account](Account) CRUD
+- [Vendor](Vendor) CRUD
+- [Category](Category) CRUD
+- [Template](Template) CRUD

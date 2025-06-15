@@ -1,2 +1,3 @@
 - Title
 - Enabled
+- Note: This should be as flexible as possible, allow auto-create, merge and so on
