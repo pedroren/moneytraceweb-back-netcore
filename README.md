@@ -9,3 +9,4 @@ This is the repository for the following implementations:
 - Mediatr for CQRS and events
 - Fluentvalidations for backend validations
 - ErrorOr for result pattern
+- Entity Framework for persistance (Inmemory for now)
